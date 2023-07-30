@@ -7,7 +7,7 @@ export class Users extends Model<UserInterface> {}
 Users.init({
 
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
         primaryKey: true,
         allowNull: false,
     },
