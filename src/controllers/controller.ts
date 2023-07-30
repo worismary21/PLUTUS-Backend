@@ -1,12 +1,57 @@
 import express, { Request, Response, NextFunction } from "express";
-import {Users} from '../models/user'
+import User  from '../model/user'
+import {v4} from "uuid";
+import { hashedPassword } from "./utils/auth";
+import { genAccount} from "./utils/auth";
 // import {database} from '../config/index'
 
-export const userSignup =async (req: Request, res: Response, next: NextFunction)=>{
-    
-    const user =await Users.findAll();
-    console.log(user)
-    return res.status(200).json({user})
+export const userSignup = async (req: Request, res: Response, next: NextFunction) => { 
+
+    // TO CREATE USER
+    try {
+        const { firstName, lastName, email,password } = req.body 
+       
+        //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: "Email already exists" });
+        }
+
+        //HASH THE PASSWORD
+       
+        const hashPassword: string = await hashedPassword(password);
+
+        // Account number
+        const accNumber: string = genAccount();
+
+        //CREATE THE NEW USER
+        const newUser = await User.create({
+            id: v4(),
+            firstName,
+            lastName,
+            email,
+            password: hashPassword,
+            accountNumber: accNumber,
+            savingsWallet: {id:v4(), amount:0},
+            otp: "",
+            token: "",
+            imageUrl: "",
+            notification: "",
+            accountBalance: 0
+        });
+
+        //RETURN NEW USER
+
+        return res.status(200).json({
+            message:`User created successfully`,
+            newUser
+        });
+    } catch (error) {
+        console.error("Error creating user:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+    // const user = await Users.findAll();
+    // console.log(user)
     
 }
 
