@@ -13,7 +13,9 @@
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.1",
     "lodash.merge": "^4.6.2",
+    "nodemailer": "^6.9.4",
     "nodemon": "^3.0.1",
+    "otp-generator": "^4.0.1",
     "pg": "^8.11.1",
     "sequelize": "^6.32.1",
     "ts-node": "^10.9.1",
@@ -28,6 +30,8 @@
     "@types/jsonwebtoken": "^9.0.2",
     "@types/lodash.merge": "^4.6.7",
     "@types/node": "^20.4.5",
+    "@types/nodemailer": "^6.4.9",
+    "@types/otp-generator": "^4.0.0",
     "@types/sequelize": "^4.28.15",
     "@types/uuid": "^9.0.2"
   },

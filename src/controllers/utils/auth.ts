@@ -1,5 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import otpGenerator from "otp-generator";
+import { OTP_LENGTH, OTP_CONFIG } from "./notifications";
 
 export const hashedPassword = async (password: string) => {
   const saltRounds = 10;
@@ -14,3 +16,7 @@ export const genAccount = () => {
   return account;
 }
  
+export const generateOTP = () => {
+  const OTP = otpGenerator.generate(OTP_LENGTH, OTP_CONFIG);
+  return OTP;
+}

@@ -3,6 +3,10 @@ import User  from '../model/user'
 import {v4} from "uuid";
 import { hashedPassword } from "./utils/auth";
 import { genAccount} from "./utils/auth";
+import { generateOTP } from './utils/auth'
+import {emailHtml, sendmail} from './utils/notifications';
+import dotenv from 'dotenv';
+dotenv.config()
 // import {database} from '../config/index'
 
 export const userSignup = async (req: Request, res: Response, next: NextFunction) => { 
@@ -24,6 +28,9 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
         // Account number
         const accNumber: string = genAccount();
 
+        // OTP
+        const OTP = generateOTP()
+
         //CREATE THE NEW USER
         const newUser = await User.create({
             id: v4(),
@@ -33,7 +40,7 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
             password: hashPassword,
             accountNumber: accNumber,
             savingsWallet: {id:v4(), amount:0},
-            otp: "",
+            otp: OTP,
             token: "",
             imageUrl: "",
             notification: "",
@@ -41,7 +48,8 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
         });
 
         //RETURN NEW USER
-
+        const html = emailHtml(email, OTP)
+            await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html)
         return res.status(200).json({
             message:`User created successfully`,
             newUser
