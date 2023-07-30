@@ -18,3 +18,5 @@ export const userLogin = async(req: Request, res: Response, next: NextFunction)=
 export const forgotPassword = async(req: Request, res: Response, next: NextFunction)=>{
     res.json("Recover password")
 }
+
+
