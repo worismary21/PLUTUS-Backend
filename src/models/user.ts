@@ -3,7 +3,10 @@ import {database} from '../config/index';
 import { UserInterface } from '../interface/userInterface';
 import { NUMBER } from 'sequelize';
 
-export class Users extends Model<UserInterface> {}
+export class Users extends Model<UserInterface> {
+    email: any;
+    _id: any;
+}
 Users.init({
 
     id: {
@@ -67,6 +70,10 @@ Users.init({
             },
           },
     },
+    resetLink: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    }
 },{
     sequelize: database,
     tableName: 'Users',
