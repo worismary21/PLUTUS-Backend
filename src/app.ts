@@ -1,33 +1,35 @@
-import express from 'express';
-import {HttpError} from 'http-errors'
+import express from 'express'
 import dotenv from 'dotenv'
-import {database} from './config'
+import {db} from "./config"
+import { HttpError } from 'http-errors'
 import config from "./config/dbConfig"
-import userRoute from './routes/users.routes'
+
 
 const { PORT } = config
 
-dotenv.config();
+dotenv.config()
 
-const app = express();
+const app = express()
+app.use(express.json())
 
-// Route
-app.use('/users', userRoute)
+app.get('/', (req, res) => {
+    return res.send('Hello World!')
+    }
+)
 
-app.get('/', (req,res)=>{
-    return res.send('Team Plutus')
-})
-
-database.sync({}).then(() =>{
-    console.log('Database connected')
-}).catch((err:HttpError)=>{
-  console.log(err)
+db.sync().then(() => {
+    console.log('Database is connected');
+    }).catch((err:HttpError) => {
+    console.log(err);
 });
 
-const port = PORT
 
-app.listen (port, () =>{
-    console.log(`Running on port ${port}`)
+const port = PORT 
+
+
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`)
 })
 
-export default app;
+export default app
