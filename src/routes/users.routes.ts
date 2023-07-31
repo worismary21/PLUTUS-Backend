@@ -7,7 +7,7 @@ const router = Router();
 
 router.post('/signup', userSignup);
 router.post('/login', userLogin);
-router.put('/update', forgotPassword)
 router.post('/adminSignup', createAdmin)
+router.put('/forgot-password', forgotPassword)
 
 export default router
