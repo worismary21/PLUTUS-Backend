@@ -24,6 +24,8 @@ export type IUSER = {
     imageUrl:string,
     notification:string,
     accountBalance:number,
+    role: string,
+    verify: boolean
 }
 
 // class User extends Model<IUSER>{
@@ -87,8 +89,14 @@ User.init({
         type:DataTypes.INTEGER,
         allowNull:true
     },
-
-
+    role:{
+        type:DataTypes.STRING,
+        allowNull:true
+    },
+    verify:{
+        type:DataTypes.BOOLEAN,
+        allowNull:true
+    }
 }, {
     sequelize:db,
     tableName:"User",
