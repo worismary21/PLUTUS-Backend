@@ -1,7 +1,10 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from 'express';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import otpGenerator from "otp-generator";
 import { OTP_LENGTH, OTP_CONFIG } from "./notifications";
+
+
 
 export const hashedPassword = async (password: string) => {
   const saltRounds = 10;
@@ -20,3 +23,30 @@ export const generateOTP = () => {
   const OTP = otpGenerator.generate(OTP_LENGTH, OTP_CONFIG);
   return OTP;
 }
+
+export const tokenGenerator = (data:any)=>{
+  const token = jwt.sign(data, "onGod")
+  return token
+}
+
+export const verifyToken = (token:any)=>{
+   const decoded = jwt.verify(token, "onGod")
+   return decoded
+}
+
+export const isAdmin = async (req: Request, res: Response, next: NextFunction) =>{
+  const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      throw new Error('No token provided');
+    }
+  const decodedToken = jwt.verify(token, "onGod") as JwtPayload;;
+  
+  if(decodedToken.role !== 'admin'){
+      throw new Error('You are not admin')
+  }else{
+      next();
+  }
+};
+
+
