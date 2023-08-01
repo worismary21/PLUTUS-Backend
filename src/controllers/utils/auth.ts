@@ -24,18 +24,18 @@ export const generateOTP = () => {
   return OTP;
 }
 
-export const resetPasswordOTP = () => {
-  const optExpiryMinutes = 6
-  const otp = Math.floor(1000 + Math.random() * 9000).toString()
-  const expirationTime = new Date()
-  expirationTime.setMinutes(expirationTime.getMinutes() + optExpiryMinutes)
-  const response = {
-    otp,
-    expiresAt: expirationTime.toISOString()
-  }
+// export const resetPasswordOTP = () => {
+//   const optExpiryMinutes = 6
+//   const otp = Math.floor(1000 + Math.random() * 9000).toString()
+//   const expirationTime = new Date()
+//   expirationTime.setMinutes(expirationTime.getMinutes() + optExpiryMinutes)
+//   const response = {
+//     otp,
+//     expiresAt: expirationTime.toISOString()
+//   }
 
-  return response
-}
+//   return response
+// }
 
 export const generateToken = (user:any) => {
   const payload = {
@@ -48,7 +48,6 @@ export const generateToken = (user:any) => {
   const token = jwt.sign(payload, `${process.env.APP_SECRET}`)
   return token
 }
-
 
 
 export const verifyToken = (token: string) => {

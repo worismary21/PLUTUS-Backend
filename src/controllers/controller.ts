@@ -1,12 +1,14 @@
 import express, { Request, Response, NextFunction } from "express";
 import User, { IUSER }  from '../model/user'
 import {v4} from "uuid";
-import { generateToken, hashedPassword, resetPasswordOTP, verifyToken } from "./utils/auth";
+import { generateToken, hashedPassword, verifyToken } from "./utils/auth";
 import { genAccount} from "./utils/auth";
 import { generateOTP } from './utils/auth'
 import {emailHtml, sendmail} from './utils/notifications';
 import nodemailer from 'nodemailer'
 import dotenv from 'dotenv';
+import jwt, { JwtPayload } from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 dotenv.config()
 // import {database} from '../config/index'
 
@@ -69,20 +71,45 @@ export const userLogin = async(req: Request, res: Response, next: NextFunction)=
     res.json("User Login")
 }
 
-export const forgotPassword = async(req: Request, res: Response, next: NextFunction)=>{
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    const { email} = req.body;
+    try {
+        const user = await User.findOne({where:{email}}) as unknown as IUSER
+        if (!user) {
+            return res.status(400).json({error: "User does not exist!"});
+        }
+        const token = jwt.sign({ email: user.email, _id: user.id }, process.env.RESET_PASSWORD_KEY!, {
+            expiresIn: '10m'})
+       
+            const html = `
+                <h2>Please click on given link to reset your password</h2>
+                <p>${process.env.CLIENT_URL}/resetpassword/${token}</p>
+            `
+      
+
+        await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html)
+        return res.status(200).json({
+            message: "Verification Sent",
+            method:req.method
+        })
+        // return user.updateOne({ resetLink: token }, function (error, success) {
+        //     if (error) {
+        //         return res.status(400).json({ error: "result password link error" })
+        //     } else {
+
+        //     }
+        // });
+
+    } catch (error) {
+        console.error(error);
+    }
     res.json("Recover password")
 }
 
 
-export const reqResetPasswordOTP = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyChangePasswordEmail = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-                user: process.env.DEV_GMAIL_USER,
-                pass: process.env.DEV_GMAIL_PASSWORD
-            }
-        });
+
     
         const { email } = req.body;
     
@@ -94,28 +121,26 @@ export const reqResetPasswordOTP = async (req: Request, res: Response, next: Nex
         }
     
         // Generate a random four-digit OTP
-        const otp = resetPasswordOTP(); // You need to implement this function
+       // const otp = resetPasswordOTP(); // You need to implement this function
     
         // Generate token for the user (assuming generateToken is asynchronous)
-        const token = await generateToken(user.get()); // Get plain object of the user from the query result
+        const otp = await generateOTP() ; // Get plain object of the user from the query result
+
+        const token = generateToken(user)
     
         // Compose mail
         const mailOptions = {
-            from: process.env.DEV_GMAIL_USER,
+            from: process.env.DEV_GMAIL_USER!,
             to: user.get().email,
             subject: 'Password Reset OTP',
-            text: `Your OTP for password reset is: ${otp}`
+            text: `<h1>Your OTP for password reset is: ${otp}</h1>`
         };
+
+        await User.update({otp}, {where: {email}})
+
+        await sendmail(mailOptions.from, mailOptions.to, mailOptions.subject, mailOptions.text )
     
-        // Send email
-        transporter.sendMail(mailOptions, (error) => {
-            if (error) {
-                console.log('Error sending email:', error);
-                return res.status(500).json({ message: 'Error sending OTP email' });
-            }
-    
-            return res.status(200).json({ message: 'OTP sent successfully' });
-        });
+        return res.status(200).json({token})
     
     } catch (error) {
         return res.status(401).json({ message: 'Invalid User' });
@@ -123,41 +148,76 @@ export const reqResetPasswordOTP = async (req: Request, res: Response, next: Nex
 };
 
 
-export const verifyResetPasswordOTP = async (req: Request, res: Response, next: NextFunction) => {
-    const { email, otp, newPassword } = req.body;
-
+export const verifyChangePasswordOTP = async (req: Request, res: Response, next: NextFunction) => {
+        //VERIFY OTP
+    //fetch otp from req.query.params
+    //const id = req.user
+    //const user = await User.findOne({where: {id}})
+    //if(otp === user.otp) => otp correct
     try {
-        // Find user based on email
-        const user = await User.findOne({ where: { email } }) as unknown as IUSER
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        const {otp} = req.body; 
+        const id = req.params.id
+        const user = await User.findOne({ where: { id } });
+        if (!user || !('otp' in user)) {
+            return res.status(404).json({ message: 'Invalid OTP' });
         }
 
-        // Verify OTP
-        const decoded = verifyToken(otp);
+        if (otp !== user.otp) {
+            return res.status(404).json({ message: 'Invalid OTP' });
+        } else {
+            user.otp = "0"
+            return res.status(200).json({ message: 'Proceed to Change Password' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
 
-        if (!decoded || decoded?.OTP !== otp) {
-            return res.status(401).json({ message: 'Invalid OTP' });
+
+export const verifyChangePassword = async (req: Request, res: Response, next: NextFunction) => {   
+    try {
+        const userid = req.params.id
+        const { oldPassword, newPassword, confirm_password } = req.body;
+
+        // Find user based on ID
+        const user = await User.findOne({ where: { id: userid } }) as unknown as IUSER
+
+        // if (!user) {
+        //     return res.status(404).json({ message: 'User not found' });
+        // }
+
+        if (newPassword !== confirm_password) {
+            return res.status(400).json({ message: 'NewPassword must be the same as ConfirmPassword' });
         }
 
-        if (Date.now() / 1000 > decoded.exp) {
-            return res.status(401).json({ message: 'OTP has expired' });
+        if(oldPassword === newPassword){
+            return res.status(404).json({message: 'Oldpaswword cannot be the same with Newpassword'})
         }
 
-        // Check password
-        if (newPassword === user.password) {
-            return res.status(400).json({ message: 'NewPassword cannot be the same as OldPassword' });
+        // Check if the old password matches the one in the database
+        const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(401).json({ message: 'Invalid old password' });
         }
+
+        // Hash the new password
+        const hashedNewPassword = await hashedPassword(newPassword);
 
         // Update the user's password using the Sequelize update method
-        await User.update(
-            { password: newPassword },
-            { where: { id: user.id } }
+        // const [affectedRows] = 
+            await User.update(
+            { password: hashedNewPassword },
+            { where: { id: userid} }
         );
+         return res.json({"Password change": "successful"})
 
-        return res.status(200).json({ message: 'Password reset successful' });
-    } catch (error) {
+        // if (affectedRows > 0) {
+        //     return res.status(200).json({ message: 'Password reset successful' });
+        // } else {
+        //     return res.status(500).json({ message: 'Failed to update password' });
+        // }
+    } catch (error: any) {
+        console.log(error.message)
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
