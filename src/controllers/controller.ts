@@ -2,14 +2,15 @@ import express, { Request, Response, NextFunction } from "express";
 import Company from '../model/company'
 import User, { IUSER }  from '../model/user'
 import {v4} from "uuid";
-import { hashedPassword } from "./utils/auth";
-import { genAccount, tokenGenerator} from "./utils/auth";
+import { hashedPassword, tokenGenerator } from "./utils/auth";
+import { genAccount} from "./utils/auth";
 import { generateOTP } from './utils/auth'
-import { emailHtml, sendmail } from './utils/notifications';
-import jwt from 'jsonwebtoken'
+import {emailHtml, sendmail} from './utils/notifications';
+import nodemailer from 'nodemailer'
 import dotenv from 'dotenv';
-import Joi from "Joi";
+import Joi from "joi";
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 dotenv.config()
 // import {database} from '../config/index'
 
@@ -157,6 +158,121 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
     res.json("Recover password")
 }
 
+
+export const verifyChangePasswordEmail = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+    
+        const { email } = req.body;
+    
+        // Find user based on email
+        const user = await User.findOne({ where: { email } });
+    
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+    
+        // Generate a random four-digit OTP
+       // const otp = resetPasswordOTP(); // You need to implement this function
+    
+        // Generate token for the user (assuming generateToken is asynchronous)
+        const otp = await generateOTP() ; // Get plain object of the user from the query result
+
+        const token = tokenGenerator(user)
+    
+        // Compose mail
+        const mailOptions = {
+            from: process.env.DEV_GMAIL_USER!,
+            to: user.get().email,
+            subject: 'Password Reset OTP',
+            text: `<h1>Your OTP for password reset is: ${otp}</h1>`
+        };
+
+        await User.update({otp}, {where: {email}})
+
+        await sendmail(mailOptions.from, mailOptions.to, mailOptions.subject, mailOptions.text )
+    
+        return res.status(200).json({token})
+    
+    } catch (error) {
+        return res.status(401).json({ message: 'Invalid User' });
+    }
+};
+
+
+export const verifyChangePasswordOTP = async (req: Request, res: Response, next: NextFunction) => {
+        //VERIFY OTP
+    //fetch otp from req.query.params
+    //const id = req.user
+    //const user = await User.findOne({where: {id}})
+    //if(otp === user.otp) => otp correct
+    try {
+        const {otp} = req.body; 
+        const id = req.params.id
+        const user = await User.findOne({ where: { id } });
+        if (!user || !('otp' in user)) {
+            return res.status(404).json({ message: 'Invalid OTP' });
+        }
+
+        if (otp !== user.otp) {
+            return res.status(404).json({ message: 'Invalid OTP' });
+        } else {
+            user.otp = "0"
+            return res.status(200).json({ message: 'Proceed to Change Password' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+
+export const verifyChangePassword = async (req: Request, res: Response, next: NextFunction) => {   
+    try {
+        const userid = req.params.id
+        const { oldPassword, newPassword, confirm_password } = req.body;
+
+        // Find user based on ID
+        const user = await User.findOne({ where: { id: userid } }) as unknown as IUSER
+
+        // if (!user) {
+        //     return res.status(404).json({ message: 'User not found' });
+        // }
+
+        if (newPassword !== confirm_password) {
+            return res.status(400).json({ message: 'NewPassword must be the same as ConfirmPassword' });
+        }
+
+        if(oldPassword === newPassword){
+            return res.status(404).json({message: 'Oldpaswword cannot be the same with Newpassword'})
+        }
+
+        // Check if the old password matches the one in the database
+        const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+        if (!isPasswordCorrect) {
+            return res.status(401).json({ message: 'Invalid old password' });
+        }
+
+        // Hash the new password
+        const hashedNewPassword = await hashedPassword(newPassword);
+
+        // Update the user's password using the Sequelize update method
+        // const [affectedRows] = 
+            await User.update(
+            { password: hashedNewPassword },
+            { where: { id: userid} }
+        );
+         return res.json({"Password change": "successful"})
+
+        // if (affectedRows > 0) {
+        //     return res.status(200).json({ message: 'Password reset successful' });
+        // } else {
+        //     return res.status(500).json({ message: 'Failed to update password' });
+        // }
+    } catch (error: any) {
+        console.log(error.message)
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
 export const createAdmin = async(req: Request, res: Response, next: NextFunction)=>{
     try {
         const { firstName, lastName, email, role, password } = req.body 
@@ -254,3 +370,4 @@ export const createAdmin = async(req: Request, res: Response, next: NextFunction
 //         });
 // }
 // }
+

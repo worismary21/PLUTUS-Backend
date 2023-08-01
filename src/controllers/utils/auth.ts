@@ -3,6 +3,11 @@ import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import otpGenerator from "otp-generator";
 import { OTP_LENGTH, OTP_CONFIG } from "./notifications";
+import dotenv  from "dotenv";
+dotenv.config()
+
+
+
 
 
 
