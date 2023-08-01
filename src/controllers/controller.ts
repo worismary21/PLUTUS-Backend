@@ -2,15 +2,15 @@ import express, { Request, Response, NextFunction } from "express";
 import Company from '../model/company'
 import User, { IUSER }  from '../model/user'
 import {v4} from "uuid";
-import {  hashedPassword, verifyToken } from "./utils/auth";
-import { genAccount, tokenGenerator} from "./utils/auth";
+import { hashedPassword, tokenGenerator } from "./utils/auth";
+import { genAccount} from "./utils/auth";
 import { generateOTP } from './utils/auth'
 import {emailHtml, sendmail} from './utils/notifications';
 import nodemailer from 'nodemailer'
 import dotenv from 'dotenv';
-import jwt, { JwtPayload } from 'jsonwebtoken'
-import Joi from "Joi";
+import Joi from "joi";
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 dotenv.config()
 // import {database} from '../config/index'
 
@@ -370,3 +370,4 @@ export const createAdmin = async(req: Request, res: Response, next: NextFunction
 //         });
 // }
 // }
+
