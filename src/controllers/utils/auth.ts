@@ -1,9 +1,12 @@
 import bcrypt from "bcrypt";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { Request, Response, NextFunction } from 'express';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import otpGenerator from "otp-generator";
 import { OTP_LENGTH, OTP_CONFIG } from "./notifications";
 import dotenv  from "dotenv";
 dotenv.config()
+
+
 
 
 export const hashedPassword = async (password: string) => {
@@ -24,38 +27,29 @@ export const generateOTP = () => {
   return OTP;
 }
 
-// export const resetPasswordOTP = () => {
-//   const optExpiryMinutes = 6
-//   const otp = Math.floor(1000 + Math.random() * 9000).toString()
-//   const expirationTime = new Date()
-//   expirationTime.setMinutes(expirationTime.getMinutes() + optExpiryMinutes)
-//   const response = {
-//     otp,
-//     expiresAt: expirationTime.toISOString()
-//   }
-
-//   return response
-// }
-
-export const generateToken = (user:any) => {
-  const payload = {
-      userId: user._id,
-      otp: user.otp,
-      exp: Math.floor(Date.now() / 1000) + 3600
-      // Add any other relevant data to the payload if needed
-    };
-
-  const token = jwt.sign(payload, `${process.env.APP_SECRET}`)
+export const tokenGenerator = (data:any)=>{
+  const token = jwt.sign(data, "onGod")
   return token
 }
 
+export const verifyToken = (token:any)=>{
+   const decoded = jwt.verify(token, "onGod")
+   return decoded
+}
 
-export const verifyToken = (token: string) => {
-  try {
-    const decoded = jwt.verify(token, `${process.env.APP_SECRET}`) as object;
-    return decoded as { userId: number; OTP: string; exp: number };
-  } catch (err) {
-    console.error('Token verification failed:', err);
-    return null;
+export const isAdmin = async (req: Request, res: Response, next: NextFunction) =>{
+  const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      throw new Error('No token provided');
+    }
+  const decodedToken = jwt.verify(token, "onGod") as JwtPayload;;
+  
+  if(decodedToken.role !== 'admin'){
+      throw new Error('You are not admin')
+  }else{
+      next();
   }
 };
+
+

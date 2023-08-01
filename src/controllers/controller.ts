@@ -1,13 +1,15 @@
 import express, { Request, Response, NextFunction } from "express";
+import Company from '../model/company'
 import User, { IUSER }  from '../model/user'
 import {v4} from "uuid";
-import { generateToken, hashedPassword, verifyToken } from "./utils/auth";
-import { genAccount} from "./utils/auth";
+import {  hashedPassword, verifyToken } from "./utils/auth";
+import { genAccount, tokenGenerator} from "./utils/auth";
 import { generateOTP } from './utils/auth'
 import {emailHtml, sendmail} from './utils/notifications';
 import nodemailer from 'nodemailer'
 import dotenv from 'dotenv';
 import jwt, { JwtPayload } from 'jsonwebtoken'
+import Joi from "Joi";
 import bcrypt from 'bcrypt'
 dotenv.config()
 // import {database} from '../config/index'
@@ -47,7 +49,9 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
             token: "",
             imageUrl: "",
             notification: "",
-            accountBalance: 0
+            accountBalance: 0,
+            role: "",
+            verify: false
         });
 
         //RETURN NEW USER
@@ -66,10 +70,58 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
     
 }
 
-export const userLogin = async(req: Request, res: Response, next: NextFunction)=>{
-    // UserMap(database);
-    res.json("User Login")
-}
+export const loginUser = async (req: Request,res: Response,next: NextFunction) => {
+  try {
+    const schema = Joi.object({
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    });
+
+    const { error, value } = schema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+   
+    console.log('hello')
+    const { email, password } = req.body;
+    const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
+    
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: `User does not exist, please register` });
+    }
+
+    
+    if (user) {
+      const validate = await bcrypt.compare(password, user.password);
+      
+      if (validate) {
+      
+        const token = jwt.sign({ id: user.id }, "secret", { expiresIn: '1d' });
+
+        console.log("hello")
+        return res.status(200).json({
+          message: `Login successfully`,
+          email: user.email,
+          token,
+        });
+      }
+
+      if (!validate) {
+        return res.status(400).json({
+          message: `Invalid Password`,
+        });
+      }
+    }
+  } catch (err) {
+    return res.status(500).json({
+      message: `Internal Server Error`,
+      Error: "/users/login",
+    });
+  }
+};
 
 export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     const { email} = req.body;
@@ -126,7 +178,7 @@ export const verifyChangePasswordEmail = async (req: Request, res: Response, nex
         // Generate token for the user (assuming generateToken is asynchronous)
         const otp = await generateOTP() ; // Get plain object of the user from the query result
 
-        const token = generateToken(user)
+        const token = tokenGenerator(user)
     
         // Compose mail
         const mailOptions = {
@@ -221,3 +273,100 @@ export const verifyChangePassword = async (req: Request, res: Response, next: Ne
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+export const createAdmin = async(req: Request, res: Response, next: NextFunction)=>{
+    try {
+        const { firstName, lastName, email, role, password } = req.body 
+       
+        //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: "Email already exists" });
+        }
+        
+        if (role !== 'admin') {
+            return res.status(400).json({
+                message: `Invalid role. Role must be 'admin'`
+            })
+        }
+        //HASH THE PASSWORD
+       
+        const hashPassword: string = await hashedPassword(password);
+
+        // Account number
+        const accNumber: string = genAccount();
+
+        // OTP
+        const OTP = generateOTP()
+
+        // Token
+        const token = tokenGenerator({firstName, lastName, email, role})
+
+        //CREATE THE NEW USER
+        const newUser = await User.create({
+            id: v4(),
+            firstName,
+            lastName,
+            email,
+            password: hashPassword,
+            accountNumber: accNumber,
+            savingsWallet: {id:v4(), amount:0},
+            otp: OTP,
+            token: token,
+            imageUrl: "",
+            notification: "",
+            accountBalance: 0,
+            role,
+            verify: false
+        });
+
+        //RETURN NEW USER
+        const html = emailHtml(email, OTP)
+            await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html)
+        return res.status(200).json({
+            message:`User created successfully`,
+            newUser
+        });
+    } catch (error) {
+        console.error("Error creating user:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+    // const user = await Users.findAll();
+    // console.log(user)
+    
+}
+
+// export const createCompany = async(req: Request, res: Response, next: NextFunction)=>{
+//     const {
+//         companyName,
+//         description,
+//         rateOfReturn,
+//         duration,
+//         email,
+//         password,
+//         verified,
+//         active,
+//         businessType
+//     } = req.body
+  
+//     const findCompany = await Company.findOne({ where: { companyName } });;
+
+//     if(findCompany){
+//         return res.status(400).json({
+//             message: `Company already exists`
+//         });
+//     };
+//     if(!findCompany){
+//         let newCompany = await Company.create({
+//             id: v4(),
+//             companyName,
+//             description,
+//             rateOfReturn,
+//             duration,
+//             email,
+//             password,
+//             verified,
+//             active,
+//             businessType
+//         });
+// }
+// }
