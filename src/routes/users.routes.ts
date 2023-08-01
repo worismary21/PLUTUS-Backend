@@ -1,4 +1,4 @@
-import {userSignup, loginUser, forgotPassword, createAdmin, verifyChangePasswordEmail, verifyChangePasswordOTP, verifyChangePassword, verifyUser} from '../controllers/controller'
+import {userSignup, loginUser, forgotPassword, createAdmin, verifyChangePasswordEmail, verifyChangePasswordOTP, verifyChangePassword, verifyUser, resendOTP} from '../controllers/controller'
 import { Router} from 'express';
 import {db} from '../config/index'
 import { auth } from '../middleware/auth';
@@ -6,6 +6,8 @@ import { auth } from '../middleware/auth';
 const router = Router();
 
 router.post('/signup', userSignup);
+router.put('/update', forgotPassword);
+router.put('/resendotp/:token', resendOTP);
 router.post('/login', loginUser);
 router.post('/adminSignup', createAdmin)
 router.put('/forgot-password', forgotPassword)

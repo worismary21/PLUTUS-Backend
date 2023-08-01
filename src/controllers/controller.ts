@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import Company from '../model/company'
 import User, { IUSER }  from '../model/user'
 import {v4} from "uuid";
-import { hashedPassword, tokenGenerator } from "./utils/auth";
+import { hashedPassword, tokenGenerator, verifyToken } from './utils/auth';
 import { genAccount} from "./utils/auth";
 import { generateOTP } from './utils/auth'
 import { emailHtml, sendmail } from './utils/notifications';
@@ -197,6 +197,38 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
     res.json("Recover password")
 }
 
+
+
+export const resendOTP = async(req: Request, res: Response, next: NextFunction) =>{
+    try{
+
+    const {token} = req.params
+
+    const verified = jwt.verify(token, process.env.APP_SECRET! ) as unknown as JwtPayload
+
+    if(!verified){
+        return res.status(400).json({
+            message:"invalid token"
+        })
+    }
+  
+    const OTP = generateOTP();
+    
+    await User.update({otp: OTP}, { where: {email: verified.email}})
+
+    const html = emailHtml(verified.email, OTP)
+    await sendmail(`${process.env.GMAIL_USER}`, verified.email, "Welcome", html)
+
+    return res.status(200).json({message: "resendOTP successful"})
+
+    }catch(error){
+        return res.json({
+            message: "resendOTP failed",
+            error: error
+        })
+    }
+
+}
 
 export const verifyChangePasswordEmail = async (req: Request, res: Response, next: NextFunction) => {
     try {
