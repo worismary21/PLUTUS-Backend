@@ -6,7 +6,7 @@ import { hashedPassword } from "./utils/auth";
 import { genAccount, tokenGenerator} from "./utils/auth";
 import { generateOTP } from './utils/auth'
 import { emailHtml, sendmail } from './utils/notifications';
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import dotenv from 'dotenv';
 dotenv.config()
 // import {database} from '../config/index'
@@ -51,12 +51,18 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
             verify: false
         });
 
+        const user = await User.findOne({ where: { email } }) as unknown as IUSER
+
+        const token = jwt.sign({ email: user.email, id: user.id }, process.env.APP_SECRET!, {
+            expiresIn: '1d'})
+       
         //RETURN NEW USER
         const html = emailHtml(email, OTP)
             await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html)
         return res.status(200).json({
             message:`User created successfully`,
-            newUser
+            newUser,
+            token
         });
     } catch (error) {
         console.error("Error creating user:", error);
@@ -64,7 +70,39 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
     }
     // const user = await Users.findAll();
     // console.log(user)
-    
+}
+
+export const verifyUser =  async(req: JwtPayload, res: Response, next: NextFunction)=>{
+ try{
+    const {id} = req.user
+    const {otp} = req.body
+
+
+    //check if user exist (user.findOne)
+    const user = await User.findOne({ where: { id } }) as unknown as IUSER;
+        if (!user) return res.status(400).json({ error: "User not found" });
+       if(user.otp !== otp) return res.status(400).json({msg: `Invalid Otp`})
+       if(user.otp === otp){
+        user.verify = true
+        user.otp = "0"
+        return res.status(200).json({
+            msg: `User verified`,
+            user
+        })
+       }
+    //if not, throw errow
+
+    //verify otp check(otp == user.otp)
+
+    //update verify status key to true
+
+
+ }catch(err:any){
+    console.log(err.message)
+    return res.status(500).json({
+        Error: `Internal Server Error`
+    })
+ }
 }
 
 export const userLogin = async(req: Request, res: Response, next: NextFunction)=>{
@@ -79,7 +117,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
         if (!user) {
             return res.status(400).json({error: "User does not exist!"});
         }
-        const token = jwt.sign({ email: user.email, _id: user.id }, process.env.RESET_PASSWORD_KEY!, {
+        const token = jwt.sign({ email: user.email, id: user.id }, process.env.APP_SECRET!, {
             expiresIn: '10m'})
        
             const html = `
