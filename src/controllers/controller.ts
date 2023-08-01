@@ -8,6 +8,8 @@ import { generateOTP } from './utils/auth'
 import { emailHtml, sendmail } from './utils/notifications';
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv';
+import Joi from "Joi";
+import bcrypt from 'bcrypt'
 dotenv.config()
 // import {database} from '../config/index'
 
@@ -67,10 +69,58 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
     
 }
 
-export const userLogin = async(req: Request, res: Response, next: NextFunction)=>{
-    // UserMap(database);
-    res.json("User Login")
-}
+export const loginUser = async (req: Request,res: Response,next: NextFunction) => {
+  try {
+    const schema = Joi.object({
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    });
+
+    const { error, value } = schema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+   
+    console.log('hello')
+    const { email, password } = req.body;
+    const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
+    
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: `User does not exist, please register` });
+    }
+
+    
+    if (user) {
+      const validate = await bcrypt.compare(password, user.password);
+      
+      if (validate) {
+      
+        const token = jwt.sign({ id: user.id }, "secret", { expiresIn: '1d' });
+
+        console.log("hello")
+        return res.status(200).json({
+          message: `Login successfully`,
+          email: user.email,
+          token,
+        });
+      }
+
+      if (!validate) {
+        return res.status(400).json({
+          message: `Invalid Password`,
+        });
+      }
+    }
+  } catch (err) {
+    return res.status(500).json({
+      message: `Internal Server Error`,
+      Error: "/users/login",
+    });
+  }
+};
 
 export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     const { email} = req.body;
