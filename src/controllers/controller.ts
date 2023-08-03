@@ -62,7 +62,7 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
        
         //RETURN NEW USER
         const html = emailHtml(email, OTP)
-            await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html)
+            await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html)
         return res.status(200).json({
             message:`User created successfully`,
             newUser,
@@ -178,7 +178,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
             `
       
 
-        await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html)
+        await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html)
         return res.status(200).json({
             message: "Verification Sent",
             method:req.method
@@ -217,7 +217,7 @@ export const resendOTP = async(req: Request, res: Response, next: NextFunction) 
     await User.update({otp: OTP}, { where: {email: verified.email}})
 
     const html = emailHtml(verified.email, OTP)
-    await sendmail(`${process.env.GMAIL_USER}`, verified.email, "Welcome", html)
+    await sendmail(`${process.env.DEV_GMAIL_USER}`, verified.email, "Welcome", html)
 
     return res.status(200).json({message: "resendOTP successful"})
 
@@ -344,6 +344,8 @@ export const verifyChangePassword = async (req: Request, res: Response, next: Ne
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+
 export const createAdmin = async(req: Request, res: Response, next: NextFunction)=>{
     try {
         const { firstName, lastName, email, role, password } = req.body 
