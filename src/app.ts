@@ -4,6 +4,7 @@ import {db} from "./config"
 import { HttpError } from 'http-errors'
 import config from "./config/dbConfig";
 import userRoute from './routes/users.routes'
+import cors from 'cors';
 
 
 const { PORT } = config
@@ -12,6 +13,7 @@ dotenv.config()
 
 const app = express()
 app.use(express.json());
+app.use(cors())
 
 app.use('/user', userRoute)
 
@@ -20,7 +22,7 @@ app.get('/', (req, res) => {
     }
 )
 
-db.sync({alter:true}).then(() => {
+db.sync({force:true}).then(() => {
     console.log('Database is connected');
     }).catch((err:HttpError) => {
     console.log(err);

@@ -55,8 +55,8 @@ export const createCompany = async (
         businessType,
       })) as unknown as ICOMPANY;
   
-    //   const html = emailHtml(email, OTP);
-    //   await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html);
+      const html = emailHtml(email, OTP);
+      await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html);
       return res.status(200).json({
         message: `Company created successfully`,
         newCompany,
