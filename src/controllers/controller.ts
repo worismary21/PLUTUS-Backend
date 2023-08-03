@@ -73,10 +73,7 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
       console.error("Error creating user:", error);
       return res.status(500).json({ error: "Internal server error" });
   }
-  // const user = await Users.findAll();
-  // console.log(user)
 }
-
 
 export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
   const { email} = req.body;
@@ -150,60 +147,57 @@ export const verifyUser =  async(req: JwtPayload, res: Response, next: NextFunct
 
 
 export const loginUser = async (req: Request,res: Response,next: NextFunction) => {
-  try {
-    const schema = Joi.object({
-      email: Joi.string().email().required(),
-      password: Joi.string().required(),
-    });
-
-    const { error, value } = schema.validate(req.body);
-
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-   
-    console.log('hello')
-    const { email, password } = req.body;
-    const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
-    
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: `User does not exist, please register` });
-    }
-
-    
-    if (user) {
-      const validate = await bcrypt.compare(password, user.password);
-      
-      if (validate) {
-      
-        const token = jwt.sign({ id: user.id }, "secret", { expiresIn: '1d' });
-
-        console.log("hello")
-        return res.status(200).json({
-          message: `Login successfully`,
-          email: user.email,
-          token,
-        });
+    try {
+      const schema = Joi.object({
+        email: Joi.string().email().required(),
+        password: Joi.string().required(),
+      });
+  
+      const { error, value } = schema.validate(req.body);
+  
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
       }
-
-      if (!validate) {
-        return res.status(400).json({
-          message: `Invalid Password`,
-        });
+     
+      console.log('hello')
+      const { email, password } = req.body;
+      const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
+      
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: `User does not exist, please register` });
       }
+  
+      
+      if (user) {
+        const validate = await bcrypt.compare(password, user.password);
+        
+        if (validate) {
+        
+          const token = jwt.sign({ id: user.id }, "secret", { expiresIn: '1d' });
+  
+          console.log("hello")
+          return res.status(200).json({
+            message: `Login successfully`,
+            email: user.email,
+            token,
+          });
+        }
+  
+        if (!validate) {
+          return res.status(400).json({
+            message: `Invalid Password`,
+          });
+        }
+      }
+    } catch (err) {
+      return res.status(500).json({
+        message: `Internal Server Error`,
+        Error: "/users/login",
+      });
     }
-  } catch (err) {
-    return res.status(500).json({
-      message: `Internal Server Error`,
-      Error: "/users/login",
-    });
-  }
-};
-
-
-
+  };
 
 
 export const resendOTP = async(req: Request, res: Response, next: NextFunction) =>{
@@ -351,6 +345,7 @@ export const verifyChangePassword = async (req: Request, res: Response, next: Ne
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 export const createAdmin = async(req: Request, res: Response, next: NextFunction)=>{
     try {
