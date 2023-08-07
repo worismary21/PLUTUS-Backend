@@ -30,7 +30,7 @@ export const generateOTP = () => {
 }
 
 export const tokenGenerator = (data:any)=>{
-  const token = jwt.sign(data, "onGod")
+  const token = jwt.sign(data, process.env.APP_SECRET!)
   return token
 }
 
