@@ -4,13 +4,15 @@ import User from "./user"
 import { v4 as uuidV4 } from "uuid";
 import Investor from "./investor";
 
-enum Duration {
+export enum Duration {
     THREE_MONTH = "3 Month",
     SIX_MONTH = "6 Month",
     TWELVE_MONTH = "12 Month",
+    DEFAULT = ""
+
   }
 
-enum BusinessType {
+export enum BusinessType {
     AGRICULTURE = "Agriculture",
     MANUFACTURING = "Manufacturing",
     MINING = "Mining",
@@ -26,6 +28,7 @@ enum BusinessType {
     HOSPITALITY = "Hospitality",
     RETAIL = "Retail",
     OTHERS = "Others",
+    DEFAULT = "",
 }
 
 export type ICOMPANY = {
@@ -33,19 +36,15 @@ export type ICOMPANY = {
     companyName:string,
     description:string,
     rateOfReturn:number,
-    duration:Duration,
+    duration:string ,
     email:string,
     password:string,
     verified:boolean,
     active:boolean,
-    businessType:BusinessType,
+    businessType:string,
 }
 
-class Company extends Model<ICOMPANY>{
-    public static associate() {
-        Company.hasMany(Investor, { foreignKey: "companyId", as: "Investor" });
-      };
-}
+class Company extends Model<ICOMPANY>{}
 
 Company.init({
     id:{
@@ -67,7 +66,8 @@ Company.init({
     },
     duration:{
         type:DataTypes.ENUM(...Object.values(Duration)),
-        allowNull:false
+        allowNull:true,
+        defaultValue:Duration.DEFAULT
     },
     email:{
         type:DataTypes.STRING,
@@ -87,7 +87,8 @@ Company.init({
    },
    businessType:{
     type:DataTypes.ENUM(...Object.values(BusinessType)),
-    allowNull:false
+    allowNull:true,
+    defaultValue:BusinessType.DEFAULT
 }
 
 
@@ -96,6 +97,6 @@ Company.init({
     tableName:"Company"
 })
 
-
+Company.hasMany(Investor, { foreignKey: "companyId", as: "Investor" })
 
 export default Company
