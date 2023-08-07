@@ -34,6 +34,8 @@ export type IUSER = {
 //     }
 // }
 class User extends Model<IUSER>{
+   id: string | undefined
+   static id: string
     public static associate(models: { Investment: typeof Investment }): void {
         User.hasMany(models.Investment, { foreignKey: "userId", as: "Investment" });
       };
