@@ -145,7 +145,6 @@ export const verifyUser =  async(req: JwtPayload, res: Response, next: NextFunct
 }
 
 
-
 export const loginUser = async (req: Request,res: Response,next: NextFunction) => {
     try {
       const schema = Joi.object({
@@ -409,6 +408,7 @@ export const createAdmin = async(req: Request, res: Response, next: NextFunction
 
     }
   }
+
 
 
 
