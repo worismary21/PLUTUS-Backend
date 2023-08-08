@@ -2,6 +2,8 @@ import {userSignup, loginUser, forgotPassword, createAdmin, verifyChangePassword
 import { Router} from 'express';
 import {db} from '../config/index'
 import { auth } from '../middleware/auth';
+import { createCompany } from '../controllers/companyCntrl';
+import { isAdmin } from '../controllers/utils/auth';
 
 const router = Router();
 
@@ -11,9 +13,11 @@ router.put('/resendotp/:token', resendOTP);
 router.post('/login', loginUser);
 router.post('/adminSignup', createAdmin)
 router.put('/forgot-password', forgotPassword)
+router.post('/company',isAdmin, createCompany);
 router.put('/verify-user',auth, verifyUser)
 router.put('/change-password-email', verifyChangePasswordEmail)
 router.put('/change-password-otp/:id', verifyChangePasswordOTP)
 router.put('/change-password/:id', verifyChangePassword)
+
 
 export default router

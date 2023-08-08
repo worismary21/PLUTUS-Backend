@@ -3,13 +3,10 @@ import { db } from "../config"
 import Investment, { INVESTMENT } from "./investment"
 import Company from "./company"
 
-
 type Saving = {
     id:string,
     amount:number,
 }
-
-
 
 export type INVESTOR = {
     id:string,
