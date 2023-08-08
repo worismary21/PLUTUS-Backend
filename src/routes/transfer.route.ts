@@ -1,9 +1,9 @@
 import express from 'express';
-import { transferToBeneficiary} from "../controllers/transfer";
+import { transferToBeneficiary} from "../controllers/transferControllers";
 import { auth } from '../middleware/auth';
 const router = express.Router();
 
-router.post('/', auth, transferToBeneficiary);
+router.post('/transactions', auth, transferToBeneficiary);
 
 
 
