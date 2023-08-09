@@ -4,6 +4,7 @@ import {db} from '../config/index'
 import { auth } from '../middleware/auth';
 import { createCompany } from '../controllers/companyCntrl';
 import { isAdmin } from '../controllers/utils/auth';
+import { getUsersBalance, getUsersInfo } from '../controllers/user2'
 
 const router = Router();
 
@@ -18,5 +19,9 @@ router.put('/verify-user',auth, verifyUser)
 router.put('/change-password-email', verifyChangePasswordEmail)
 router.put('/change-password-otp/:id', verifyChangePasswordOTP)
 router.put('/change-password/:id', verifyChangePassword)
+
+router.get('/balance', auth, getUsersBalance)
+router.get('/info', auth, getUsersInfo)
+
 
 export default router
