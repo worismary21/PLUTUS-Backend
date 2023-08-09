@@ -51,6 +51,7 @@ export const transferToBeneficiary = async (
           +beneficiary_AccountNumber === +accountNumber
         ) {
           if (sender_AccountBalance >= +amount) {
+
             const sucessful_transfer = await Transfers.create({
               id: v4(),
               accountNumber,
@@ -115,6 +116,18 @@ export const transferToBeneficiary = async (
                 }
 
               if (fulfilled_transaction && user_Transaction_Status ) {
+                const sucessful_transfer = await Transfers.create({
+                  id: v4(),
+                  accountNumber,
+                  amount,
+                  transfer_purpose,
+                  beneficiary_name,
+                  beneficiary_email,
+                  payer_reference,
+                  information_for_beneficiary,
+                  status: "SUCCESSFUL",
+                  senderId: sender_id,
+                });
                 return res.status(200).json({
                   message: "Transaction Successful",
                 });
@@ -161,4 +174,3 @@ export const transferToBeneficiary = async (
   }
 };
 
-// Fund saving wallets.
