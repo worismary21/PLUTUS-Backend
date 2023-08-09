@@ -145,11 +145,11 @@ export const verifyUser =  async(req: JwtPayload, res: Response, next: NextFunct
 };
 
 export const loginUser = async (req: Request,res: Response,next: NextFunction) => {
-    try {
-      const schema = Joi.object({
-        email: Joi.string().email().required(),
-        password: Joi.string().required(),
-      });
+  try {
+    const schema = Joi.object({
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    });
 
     const { error, value } = schema.validate(req.body);
 
@@ -421,3 +421,6 @@ export const createAdmin = async(req: Request, res: Response, next: NextFunction
 
     }
 }
+  
+
+

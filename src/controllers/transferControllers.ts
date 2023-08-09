@@ -52,6 +52,19 @@ export const transferToBeneficiary = async (
         ) {
           if (sender_AccountBalance >= +amount) {
 
+            const sucessful_transfer = await Transfers.create({
+              id: v4(),
+              accountNumber,
+              amount,
+              transfer_purpose,
+              beneficiary_name,
+              beneficiary_email,
+              payer_reference,
+              information_for_beneficiary,
+              status: "SUCCESSFUL",
+              senderId: sender_id,
+            });
+            if (sucessful_transfer) {
               const beneficiary_old_Account_Balance = validated_Beneficiary.accountBalance;
               const beneficiary_new_AccountBalance = amount + beneficiary_old_Account_Balance;
 
@@ -135,6 +148,7 @@ export const transferToBeneficiary = async (
                   message: "Transaction Failed",
                 });
               }
+            }
           } else {
             return res.status(400).json({
               message: "Insufficient Funds",
