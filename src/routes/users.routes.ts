@@ -1,19 +1,9 @@
-import {
-  userSignup,
-  loginUser,
-  forgotPassword,
-  createAdmin,
-  verifyChangePasswordEmail,
-  verifyChangePasswordOTP,
-  verifyChangePassword,
-  verifyUser,
-  resendOTP,
-} from "../controllers/controller";
-import { Router } from "express";
-import { db } from "../config/index";
-import { auth } from "../middleware/auth";
-import { createCompany } from "../controllers/companyCntrl";
-import { isAdmin } from "../controllers/utils/auth";
+import {userSignup, loginUser, forgotPassword, createAdmin, verifyChangePasswordEmail, verifyChangePasswordOTP, verifyChangePassword, verifyUser, resendOTP} from '../controllers/controller'
+import { Router} from 'express';
+import {db} from '../config/index'
+import { auth } from '../middleware/auth';
+import { createCompany } from '../controllers/companyController';
+import { isAdmin } from '../controllers/utils/auth';
 import { getUsersByAdmin } from "../controllers/userss";
 import { getUsersBalance, getUsersInfo } from "../controllers/user2";
 

@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import Company, { BusinessType, ICOMPANY } from "../model/company";
+import Company, { ICOMPANY } from "../model/company";
 import User, { IUSER } from "../model/user";
 import { v4 } from "uuid";
 import { hashedPassword, tokenGenerator, verifyToken } from "./utils/auth";
