@@ -50,7 +50,7 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
           token: "",
           imageUrl: "",
           notification: "",
-          accountBalance: 0,
+          accountBalance: 10000,
           role: "",
           verify: false
       });
@@ -74,6 +74,41 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
     }
     // const user = await Users.findAll();
     // console.log(user)
+}
+
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+  const { email} = req.body;
+  try {
+      const user = await User.findOne({where:{email}}) as unknown as IUSER
+      if (!user) {
+          return res.status(400).json({error: "User does not exist!"});
+      }
+      const token = jwt.sign({ email: user.email, id: user.id }, process.env.APP_SECRET!, {
+          expiresIn: '10m'})
+     
+          const html = `
+              <h2>Please click on given link to reset your password</h2>
+              <p>${process.env.CLIENT_URL}/resetpassword/${token}</p>
+          `
+    
+
+      await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html)
+      return res.status(200).json({
+          message: "Verification Sent",
+          method:req.method
+      })
+      // return user.updateOne({ resetLink: token }, function (error, success) {
+      //     if (error) {
+      //         return res.status(400).json({ error: "result password link error" })
+      //     } else {
+
+      //     }
+      // });
+
+  } catch (error) {
+      console.error(error);
+  }
+  res.json("Recover password")
 }
 
 export const verifyUser =  async(req: JwtPayload, res: Response, next: NextFunction)=>{
