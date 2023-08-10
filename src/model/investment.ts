@@ -19,19 +19,14 @@ export type INVESTMENT = {
     rateOfReturn:number,
     profit:number,
     duration:Duration,
-    active:boolean
+    active:boolean,
+    accountNumber:string
 }
 
-// class Investment extends Model<INVESTMENT>{
-//     public static associate() {
-//         Investment.belongsTo(User, {foreignKey:'userId', as:'User'})
-//     }
-// }
-
 class Investment extends Model<INVESTMENT>{
-    public static associate(models: { User: typeof User }): void {
-    Investment.belongsTo(models.User, { foreignKey: "userId", as: "User" });
-  };
+    public static associate() {
+        Investment.belongsTo(User, {foreignKey:'userId', as:'User'})
+    }
 }
 
 Investment.init({
@@ -58,6 +53,11 @@ Investment.init({
     rateOfReturn:{
         type:DataTypes.FLOAT,
         allowNull:false
+    },
+    accountNumber:{
+        type:DataTypes.STRING,
+        allowNull: false,
+        unique: true,
     },
     profit:{
         type:DataTypes.FLOAT,

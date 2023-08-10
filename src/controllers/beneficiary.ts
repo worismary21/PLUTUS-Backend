@@ -1,16 +1,22 @@
 import express, { Request, Response, NextFunction } from "express";
-import Beneficiary, { BeneficiaryDetails, BeneficiaryType } from "../model/beneficiary";
+import Beneficiary from "../model/beneficiary";
 import User from "../model/user";
 import { v4 } from "uuid";
 import { STRING } from "sequelize";
 import { UUID } from "sequelize";
+import jwt, { JwtPayload } from 'jsonwebtoken'
+
 
 export const getBeneficiaries = async (req: Request, res: Response) => {
    try {
-     const id = req.params.id;
 
-     console.log('Fetching beneficiaries for id:', id); // Add this line
-     const beneficiaries = await Beneficiary.findAll({ where: { id: id } });
+    const token: any = req.headers.authorization;
+    const token_info = token.split(" ")[1];
+    const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+    
+    const id = decodedToken.id;
+
+     const beneficiaries = await Beneficiary.findAll({ where: { userId: id } });
      res.status(200).json(beneficiaries);
 
    } catch (error) {
@@ -25,59 +31,92 @@ export const createBeneficiaries = async (
    NextFunction: NextFunction
  ) => {
    try {
-     const { userId, beneficiaryName, accountNumber, beneficiaryType } = req.body;
+    const token: any = req.headers.authorization;
+    const token_info = token.split(" ")[1];
+    const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+
+    const user_id = decodedToken.id;
+    const { beneficiaryName, accountNumber, beneficiaryType } = req.body;
  
-     // Generate UUID for the beneficiary id
-     const id = v4();
- 
-     // Query for the user based on userId (not accountNumber)
-     const user = await User.findOne({ where: { id: userId } });
+     const user = await User.findOne({ where: { id: user_id } });
  
      if (!user) {
        return res.status(404).json({
-         error: "User not found",
+         error: "No existng beneficiary. Please ADD BENEFICIARY.",
        });
      }
- 
-     const mappedBeneficiaryType =
-       beneficiaryType === "Individual"
-         ? BeneficiaryType.INDIVIDUAL
-         : BeneficiaryType.COMPANY;
- 
-     const newBeneficiary = await Beneficiary.create({
-       id,
-       userId: User.id, // Assign the user's id
-       beneficiaryName,
-       accountNumber,
-       beneficiaryType: mappedBeneficiaryType,
-     });
- 
-     res.status(200).json({
-       message: "Beneficiary created successfully",
-       newBeneficiary,
-     });
+
+     const validating_beneficiary = await User.findOne({ where: { accountNumber:accountNumber } });
+     const checking_existing_beneficiary = await Beneficiary.findOne({ where: { accountNumber }})
+
+     if(validating_beneficiary){
+      if(!checking_existing_beneficiary){
+        const newBeneficiary = await Beneficiary.create({
+          id:v4(),
+          userId: user_id,
+          beneficiaryName,
+          accountNumber
+        });
+        res.status(200).json({
+          message: "Beneficiary created successfully",
+          data: newBeneficiary
+        });
+      }else{
+      }
+      res.status(400).json({
+        message: "Beneficiary Already Exists"
+      })
+     }else{
+      res.status(400).json({
+        message: "Account Number doesn't Match"
+      })
+     }
+
    } catch (error) {
      console.error("Error creating beneficiary", error);
      res.status(500).json({
-       error: "Internal server error",
+       error: "Internal server error, Error creating beneficiary",
      });
    }
  };
+
  export const deleteBeneficiary = async (req: Request, res: Response, NextFunction: NextFunction) =>{
       try{
-           const id = req.params.id;
-           const deleteId = await Beneficiary.destroy({
-                 where: {id: id },
-           });
-           if(deleteId > 0) {
-            res.status(200).json({
-               message: "Beneficiary deleted successfully"
-            });
-           } else {
-            res.status(404).json({
-               error: "Beneficiary not found"
-            });
-           }
+        const token: any = req.headers.authorization;
+        const token_info = token.split(" ")[1];
+        const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+
+        const { accountNumber } = req.body
+        if(decodedToken.id){
+          const user_id = decodedToken.id
+
+          const get_User_Beneficiaries = await Beneficiary.findAll({where: {userId: user_id}} )
+          
+          if(get_User_Beneficiaries.length !== 0){
+            const delete_beneficiary = await Beneficiary.destroy({
+              where: { accountNumber}
+          })
+
+          if(delete_beneficiary){
+            return res.status(200).json({
+              message: "Beneficiary has been successfully deleted."
+            })
+          }else{
+            return res.status(200).json({
+              message: "DELETE FAILED!! Account is not your beneficiary"
+            })
+          }
+        }else{
+          return res.status(400).json({
+            message: "You do not have any beneficiary"
+          })
+        }
+      }else{
+        return res.status(400).json({
+          message: "You must be LOGGED IN to delete any beneficiary"
+        })
+      }
+
       }catch(error){
          console.error('Error deleting Beneficiary', error);
          res.status(500).json({
@@ -85,3 +124,19 @@ export const createBeneficiaries = async (
          })
       }
  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

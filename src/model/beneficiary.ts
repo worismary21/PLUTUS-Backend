@@ -3,17 +3,12 @@ import { db } from "../config";
 import User from "./user";
 
 
-export enum BeneficiaryType {
-    INDIVIDUAL = "Individual",
-    COMPANY = "Company",
-}
 
 export interface BeneficiaryDetails {
     id: string;
     userId: string;
     beneficiaryName: string;
     accountNumber: string;
-    beneficiaryType: BeneficiaryType;
 }
 
 class Beneficiary extends Model<BeneficiaryDetails> {
@@ -43,12 +38,7 @@ Beneficiary.init(
         accountNumber: {
             type: DataTypes.STRING,
             allowNull: false,
-        },
-        beneficiaryType: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        
+        } 
     },
     {
       sequelize: db,

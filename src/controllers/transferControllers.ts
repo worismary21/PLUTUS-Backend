@@ -17,6 +17,7 @@ export const transferToBeneficiary = async (
   NextFunction: NextFunction
 ) => {
   try {
+
     const token: any = req.headers.authorization;
     const token_info = token.split(" ")[1];
     const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
@@ -50,6 +51,7 @@ export const transferToBeneficiary = async (
           +beneficiary_AccountNumber === +accountNumber
         ) {
           if (sender_AccountBalance >= +amount) {
+
             const sucessful_transfer = await Transfers.create({
               id: v4(),
               accountNumber,
@@ -64,7 +66,7 @@ export const transferToBeneficiary = async (
             });
             if (sucessful_transfer) {
               const beneficiary_old_Account_Balance = validated_Beneficiary.accountBalance;
-              const beneficiary_new_AccountBalance = +amount + beneficiary_old_Account_Balance;
+              const beneficiary_new_AccountBalance = amount + beneficiary_old_Account_Balance;
 
               const fulfilled_transaction = await User.update(
                 { accountBalance: beneficiary_new_AccountBalance },
@@ -76,8 +78,7 @@ export const transferToBeneficiary = async (
               );
 
               const sender_old_Account_Balance = sender_AccountBalance;
-              const sender_new_Account_Balance =
-                +sender_old_Account_Balance - +amount;
+              const sender_new_Account_Balance = sender_old_Account_Balance - amount;
 
               const user_Transaction_Status = await User.update(
                 { accountBalance: sender_new_Account_Balance },
@@ -114,7 +115,19 @@ export const transferToBeneficiary = async (
                   });
                 }
 
-              if (fulfilled_transaction) {
+              if (fulfilled_transaction && user_Transaction_Status ) {
+                const sucessful_transfer = await Transfers.create({
+                  id: v4(),
+                  accountNumber,
+                  amount,
+                  transfer_purpose,
+                  beneficiary_name,
+                  beneficiary_email,
+                  payer_reference,
+                  information_for_beneficiary,
+                  status: "SUCCESSFUL",
+                  senderId: sender_id,
+                });
                 return res.status(200).json({
                   message: "Transaction Successful",
                 });
@@ -160,3 +173,4 @@ export const transferToBeneficiary = async (
     console.error(error);
   }
 };
+

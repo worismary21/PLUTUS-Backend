@@ -4,7 +4,7 @@ import { db } from "../config"
 export type TRANSFER = {
     id:string,
     accountNumber:string,
-    amount:string,
+    amount:number,
     transfer_purpose:string,
     beneficiary_name:string,
     beneficiary_email:string,
@@ -27,7 +27,7 @@ Transfers.init({
         allowNull:false
     },
     amount:{
-        type:DataTypes.STRING,
+        type:DataTypes.INTEGER,
         allowNull:false
     },
     transfer_purpose:{
