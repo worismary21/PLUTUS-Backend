@@ -273,6 +273,7 @@ export const verifyChangePassword = async (req: Request, res: Response, next: Ne
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 export const createAdmin = async(req: Request, res: Response, next: NextFunction)=>{
     try {
         const { firstName, lastName, email, role, password } = req.body 
