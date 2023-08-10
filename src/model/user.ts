@@ -1,6 +1,5 @@
 import { DataTypes, Model, Sequelize } from "sequelize"
 import { db } from "../config"
-import Investment, { INVESTMENT } from "./investment"
 import Company from "./company"
 
 
@@ -8,8 +7,6 @@ type Saving = {
     id:string,
     amount:number,
 }
-
-
 
 export type IUSER = {
     id:string,
@@ -28,18 +25,7 @@ export type IUSER = {
     verify: boolean
 }
 
-// class User extends Model<IUSER>{
-//     public static associate(models:INVESTMENT) {
-//         User.hasMany(Investment, {foreignKey:'userId', as:'Investment'} )
-//     }
-// }
-class User extends Model<IUSER>{
-   id: string | undefined
-   static id: string
-    public static associate(models: { Investment: typeof Investment }): void {
-        User.hasMany(models.Investment, { foreignKey: "userId", as: "Investment" });
-      };
-}
+class User extends Model<IUSER>{}
 
 User.init({
     id:{

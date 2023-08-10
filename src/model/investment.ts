@@ -1,82 +1,77 @@
-import { DataTypes, Model, Sequelize } from "sequelize"
-import { db } from "../config"
-import User from "./user"
+// import { DataTypes, Model } from "sequelize";
+// import { db } from "../config";
+// import Company from "./company";
 
+// // enum Duration {
+// //   THREE_MONTH = "3 Month",
+// //   SIX_MONTH = "6 Month",
+// //   TWELVE_MONTH = "12 Month",
+// // }
 
-enum Duration {
-    THREE_MONTH = "3 Month",
-    SIX_MONTH = "6 Month",
-    TWELVE_MONTH = "12 Month",
-  }
-  
-  
+// export interface InvestmentAttributes {
+//   id: string;
+//   company_id: string;
+//   companyName: string;
+//   investment_category: string;
+//   investment_description: string;
+//   rateOfReturn: number;
+//   duration: Duration;
+//   min_investment_amount: number;
+//   max_investment_amount: number;
+// }
 
-export type INVESTMENT = {
-    id:string,
-    userId:string,
-    companyName:string,
-    investedCapital:number,
-    rateOfReturn:number,
-    profit:number,
-    duration:Duration,
-    active:boolean,
-    accountNumber:string
-}
+// class Investment extends Model<InvestmentAttributes> {
+//   company_id: any;
+//   userId: any;
+//   public static associate() {
+//     Investment.belongsTo(Company, { foreignKey: 'company_id', as: 'Company' });
+//   }
+// }
 
-class Investment extends Model<INVESTMENT>{
-    public static associate() {
-        Investment.belongsTo(User, {foreignKey:'userId', as:'User'})
-    }
-}
+// Investment.init(
+//   {
+//     id: {
+//       type: DataTypes.UUID,
+//       primaryKey: true,
+//       allowNull: false,
+//     },
+//     company_id: {
+//       type: DataTypes.UUID,
+//       allowNull: false,
+//     },
+//     companyName: {
+//       type: DataTypes.STRING,
+//       allowNull: false,
+//     },
+//     investment_category: {
+//       type: DataTypes.STRING,
+//       allowNull: false,
+//     },
+//     investment_description: {
+//       type: DataTypes.STRING,
+//       allowNull: false,
+//     },
+//     rateOfReturn: {
+//       type: DataTypes.INTEGER,
+//       allowNull: false,
+//     },
+//     duration: {
+//       type: DataTypes.ENUM(...Object.values(Duration)),
+//       allowNull: false,
+//     },
+//     min_investment_amount: {
+//       type: DataTypes.INTEGER,
+//       allowNull: false,
+//     },
+//     max_investment_amount: {
+//       type: DataTypes.INTEGER,
+//       allowNull: false,
+//     },
+//   },
+//   {
+//     sequelize: db,
+//     modelName: "Investment",
+//   }
+// );
 
-Investment.init({
-    id:{
-        type:DataTypes.UUID,
-        primaryKey:true,
-        allowNull:false
-    },
-    userId:{
-        type:DataTypes.UUID,
-        references: {
-            model: User,
-            key: "id"
-        }
-    },
-    companyName:{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
-    investedCapital:{
-        type:DataTypes.FLOAT,
-        allowNull:false
-    },
-    rateOfReturn:{
-        type:DataTypes.FLOAT,
-        allowNull:false
-    },
-    accountNumber:{
-        type:DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-    },
-    profit:{
-        type:DataTypes.FLOAT,
-        allowNull:false
-    },
-    duration:{
-        type:DataTypes.STRING,
-        allowNull:true
-    },
-   active:{
-        type:DataTypes.BOOLEAN,
-        allowNull:false
-   }
-}, {
-    sequelize:db,
-    tableName:"Investment",
-    modelName:"Investment"
-})
-
-
-
-export default Investment
+// export default Investment;

@@ -6,6 +6,7 @@ import config from "./config/dbConfig";
 import userRoute from './routes/users.routes';
 import beneficiaryRoute from './routes/beneficiary.routes'
 import transferRoute from './routes/transfer.route'
+import companyRoute from './routes/company.route'
 import cors from 'cors';
 
 
@@ -20,6 +21,7 @@ app.use(cors())
 app.use('/user', userRoute)
 app.use('/beneficiary', beneficiaryRoute)
 app.use('/transfer', transferRoute)
+app.use('/company', companyRoute)
 
 
 app.get('/', (req, res) => {

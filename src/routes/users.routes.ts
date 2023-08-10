@@ -2,7 +2,7 @@ import {userSignup, loginUser, forgotPassword, createAdmin, verifyChangePassword
 import { Router} from 'express';
 import {db} from '../config/index'
 import { auth } from '../middleware/auth';
-import { createCompany } from '../controllers/companyCntrl';
+import { createCompany } from '../controllers/companyController';
 import { isAdmin } from '../controllers/utils/auth';
 
 const router = Router();
