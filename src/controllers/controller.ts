@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import Company from '../model/company'
-import User, { IUSER }  from '../model/user'
+import User, { IUSER }  from '../model/user';
+import Setting, {ISETTING} from '../model/acountSetting'
 import {v4} from "uuid";
 import { hashedPassword, tokenGenerator, verifyToken } from './utils/auth';
 import { genAccount} from "./utils/auth";
@@ -19,7 +20,7 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
 
     // TO CREATE USER
     try {
-        const { firstName, lastName, email,password } = req.body 
+        const { firstName, lastName, email,password, phoneNumber, address, zipCode, city, state, country } = req.body 
        
         //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
         const existingUser = await User.findOne({ where: { email } });
@@ -48,11 +49,17 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
             savingsWallet: {id:v4(), amount:0},
             otp: OTP,
             token: "",
-            imageUrl: "",
+            imageUrl: '',
             notification: "",
             accountBalance: 0,
             role: "",
-            verify: false
+            verify: false,
+            phoneNumber, 
+            address, 
+            zipCode, 
+            city, 
+            state, 
+            country
         });
 
         const user = await User.findOne({ where: { email } }) as unknown as IUSER
@@ -346,7 +353,8 @@ export const verifyChangePassword = async (req: Request, res: Response, next: Ne
 };
 export const createAdmin = async(req: Request, res: Response, next: NextFunction)=>{
     try {
-        const { firstName, lastName, email, role, password } = req.body 
+        const { firstName, lastName, email, role, password,phoneNumber, address, zipCode, city, state, country  } = req.body 
+        
        
         //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
         const existingUser = await User.findOne({ where: { email } });
@@ -387,7 +395,13 @@ export const createAdmin = async(req: Request, res: Response, next: NextFunction
             notification: "",
             accountBalance: 0,
             role,
-            verify: false
+            verify: false,
+            phoneNumber, 
+            address, 
+            zipCode, 
+            city, 
+            state, 
+            country
         });
 
         //RETURN NEW USER
@@ -406,39 +420,103 @@ export const createAdmin = async(req: Request, res: Response, next: NextFunction
     
 }
 
-// export const createCompany = async(req: Request, res: Response, next: NextFunction)=>{
-//     const {
-//         companyName,
-//         description,
-//         rateOfReturn,
-//         duration,
-//         email,
-//         password,
-//         verified,
-//         active,
-//         businessType
-//     } = req.body
-  
-//     const findCompany = await Company.findOne({ where: { companyName } });;
 
-//     if(findCompany){
-//         return res.status(400).json({
-//             message: `Company already exists`
-//         });
-//     };
-//     if(!findCompany){
-//         let newCompany = await Company.create({
-//             id: v4(),
-//             companyName,
-//             description,
-//             rateOfReturn,
-//             duration,
-//             email,
-//             password,
-//             verified,
-//             active,
-//             businessType
-//         });
-// }
-// }
+
+export const updateUserProfile = async(req: Request, res: Response, next: NextFunction) => { 
+    try {
+       
+       
+    const { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country, imageUrl } = req.body
+    //let imageUrl  = req.file?.path
+
+     console.log("image live   ",imageUrl, req.file?.path)
+
+    const updateField: Partial<IUSER> = {}
+
+    if(!firstName){
+        updateField.firstName = firstName
+    }
+    if(!lastName){
+        updateField.lastName = lastName
+    }
+    if(!email){
+        updateField. email =  email
+    }
+    if(!phoneNumber){
+        updateField. phoneNumber =  phoneNumber
+    }
+
+    if(!imageUrl){
+        updateField.imageUrl = req.file?.path
+    }
+
+    if(!address){
+        updateField. address =  address
+    }
+    if(!zipCode){
+        updateField. zipCode =  zipCode
+    }
+    if(!city){
+        updateField. city =  city
+    }
+    if(!state){
+        updateField. state =  state
+    }
+    if(!country){
+        updateField. country =  country
+    }
+
+    const updatedUser = await User.update(updateField,  {where: {email: email }} ) as unknown as IUSER
+
+       if (updatedUser) {
+          return res.status(200).json({
+             message: `User updated successfully`,
+             data: updatedUser
+          });
+       }
+ 
+       return res.status(401).json({
+          message: `Update operation failed`
+       });
+    } catch (error: any) {
+       console.log(error.message);
+       return res.status(500).json({ message: 'Internal server error' });
+    }
+ };
+
+
+
+ export const createUserImage = async (req: Request, res: Response) =>{
+    console.log('here')
+    const imageUrl  = req.file
+
+    console.log('imageUrl  ' , imageUrl)
+    
+    const userId = req.params.id
+
+    const updateField: Partial<IUSER> = {}
+
+    if(!imageUrl){
+        updateField.imageUrl = imageUrl
+    }
+
+
+    const updateUserImage = User.update(updateField,  {where: {id: userId}} ) as unknown as IUSER
+
+    if (updateUserImage) {
+        return res.status(200).json({
+           message: `User updated successfully`,
+           data: updateUserImage
+        });
+     }
+
+     return res.status(401).json({
+        message: `Update operation failed`
+     });
+ 
+
+ }
+
+
+
 

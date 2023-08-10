@@ -21,19 +21,28 @@ export type IUSER = {
     password:string,
     otp:string,
     token:string,
-    imageUrl:string,
+    imageUrl?:string,
     notification:string,
     accountBalance:number,
     role: string,
-    verify: boolean
+    verify: boolean,
+    phoneNumber:string,
+    address:string,
+    zipCode:string,
+    city:string,
+    state:string,
+    country:string
 }
 
 // class User extends Model<IUSER>{
 //     public static associate(models:INVESTMENT) {
 //         User.hasMany(Investment, {foreignKey:'userId', as:'Investment'} )
 //     }
-// }
+// }nb
 class User extends Model<IUSER>{
+    static findOneAndUpdate(arg0: { where: { id: string } }): unknown {
+        throw new Error("Method not implemented.")
+    }
     public static associate(models: { Investment: typeof Investment }): void {
         User.hasMany(models.Investment, { foreignKey: "userId", as: "Investment" });
       };
@@ -96,7 +105,31 @@ User.init({
     verify:{
         type:DataTypes.BOOLEAN,
         allowNull:true
-    }
+    },
+    phoneNumber: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      zipCode: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      city: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      state: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      country: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
 }, {
     sequelize:db,
     tableName:"User",
