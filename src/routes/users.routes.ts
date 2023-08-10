@@ -2,6 +2,10 @@ import {userSignup, loginUser, forgotPassword, createAdmin, verifyChangePassword
 import { Router} from 'express';
 import {db} from '../config/index'
 import { auth } from '../middleware/auth';
+import { createCompany } from '../controllers/companyController';
+import { isAdmin } from '../controllers/utils/auth';
+import { getUsersByAdmin } from "../controllers/userss";
+import { getUsersBalance, getUsersInfo } from "../controllers/user2";
 import { upload } from '../middleware/uploadImage';
 
 const router = Router();
@@ -18,5 +22,10 @@ router.put('/change-password-otp/:id', verifyChangePasswordOTP)
 router.put('/change-password/:id', verifyChangePassword);
 router.put('/updateaccount', updateUserProfile);
 router.put('/profileimage', upload.single('image'), createUserImage)
+router.post("/company", isAdmin, createCompany);
+router.get("/get", getUsersByAdmin);
 
-export default router
+router.get("/balance", auth, getUsersBalance);
+router.get("/info", auth, getUsersInfo);
+
+export default router;

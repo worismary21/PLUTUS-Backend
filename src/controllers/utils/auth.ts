@@ -7,10 +7,6 @@ import dotenv  from "dotenv";
 dotenv.config()
 
 
-
-
-
-
 export const hashedPassword = async (password: string) => {
   const saltRounds = 10;
   return await bcrypt.hash(password, saltRounds);
@@ -23,6 +19,12 @@ export const genAccount = () => {
   const account = `${prefix + num}`
   return account;
 }
+export const companyAccount = () => {
+  const prefix = '301';
+    const num = Math.floor(10000000 + Math.random() * 900000);
+  const account = `${prefix + num}`
+  return account;
+}
  
 export const generateOTP = () => {
   const OTP = otpGenerator.generate(OTP_LENGTH, OTP_CONFIG);
@@ -30,12 +32,12 @@ export const generateOTP = () => {
 }
 
 export const tokenGenerator = (data:any)=>{
-  const token = jwt.sign(data, "onGod")
+  const token = jwt.sign(data, process.env.APP_SECRET!, {expiresIn: '1d'})
   return token
 }
 
 export const verifyToken = (token:any)=>{
-   const decoded = jwt.verify(token, "onGod")
+   const decoded = jwt.verify(token, process.env.APP_SECRET!)
    return decoded
 }
 
@@ -45,7 +47,7 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction) =
     if (!token) {
       throw new Error('No token provided');
     }
-  const decodedToken = jwt.verify(token, "onGod") as JwtPayload;;
+  const decodedToken = jwt.verify(token, process.env.APP_SECRET!) as JwtPayload;;
   
   if(decodedToken.role !== 'admin'){
       throw new Error('You are not admin')
