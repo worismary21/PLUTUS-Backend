@@ -110,23 +110,23 @@ User.init({
         type: DataTypes.STRING,
         allowNull: true,
       },
-      address: {
+    address: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      zipCode: {
+    zipCode: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      city: {
+    city: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      state: {
+    state: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      country: {
+    country: {
         type: DataTypes.STRING,
         allowNull: true,
       },

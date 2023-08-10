@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import Company from '../model/company'
 import User, { IUSER }  from '../model/user';
-import Setting, {ISETTING} from '../model/acountSetting'
 import {v4} from "uuid";
 import { hashedPassword, tokenGenerator, verifyToken } from './utils/auth';
 import { genAccount} from "./utils/auth";
@@ -425,11 +424,12 @@ export const createAdmin = async(req: Request, res: Response, next: NextFunction
 export const updateUserProfile = async(req: Request, res: Response, next: NextFunction) => { 
     try {
        
+    
        
-    const { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country, imageUrl } = req.body
-    //let imageUrl  = req.file?.path
+    let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
+  
 
-     console.log("image live   ",imageUrl, req.file?.path)
+      console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
 
     const updateField: Partial<IUSER> = {}
 
@@ -446,9 +446,9 @@ export const updateUserProfile = async(req: Request, res: Response, next: NextFu
         updateField. phoneNumber =  phoneNumber
     }
 
-    if(!imageUrl){
-        updateField.imageUrl = req.file?.path
-    }
+    // if(!imageUrl){
+    //     updateField.imageUrl =  req.file
+    // }
 
     if(!address){
         updateField. address =  address
@@ -487,21 +487,18 @@ export const updateUserProfile = async(req: Request, res: Response, next: NextFu
 
 
  export const createUserImage = async (req: Request, res: Response) =>{
-    console.log('here')
-    const imageUrl  = req.file
+    try{
 
-    console.log('imageUrl  ' , imageUrl)
-    
-    const userId = req.params.id
+        const {email} = req.body
+
+    console.log("email ",email)
+
+    const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
 
     const updateField: Partial<IUSER> = {}
 
-    if(!imageUrl){
-        updateField.imageUrl = imageUrl
-    }
 
-
-    const updateUserImage = User.update(updateField,  {where: {id: userId}} ) as unknown as IUSER
+    const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
 
     if (updateUserImage) {
         return res.status(200).json({
@@ -513,7 +510,12 @@ export const updateUserProfile = async(req: Request, res: Response, next: NextFu
      return res.status(401).json({
         message: `Update operation failed`
      });
- 
+
+    }catch(error){
+        return res.status(500).json({
+            message: `Error Uploading Imsge`
+         });
+    }
 
  }
 

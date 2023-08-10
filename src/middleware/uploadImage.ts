@@ -6,9 +6,9 @@ import { v2 as cloudinary } from 'cloudinary';
 dotenv.config();
 
 cloudinary.config({ 
-  cloud_name: process.env.CLOUDINARY_NAME, // Removed backticks and curly braces
-  api_key: process.env.API_KEY_4_CLOUDINARY, // Removed backticks and curly braces
-  api_secret: process.env.API_SECRET_4_CLOUDINARY, // Removed backticks and curly braces
+  cloud_name: process.env.CLOUDINARY_NAME!, // Removed backticks and curly braces
+  api_key: process.env.API_KEY_4_CLOUDINARY!, // Removed backticks and curly braces
+  api_secret: process.env.API_SECRET_4_CLOUDINARY!, // Removed backticks and curly braces
 });
 
 const storage = new CloudinaryStorage({

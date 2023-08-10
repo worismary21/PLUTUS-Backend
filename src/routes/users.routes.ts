@@ -16,7 +16,7 @@ router.put('/verify-user',auth, verifyUser)
 router.put('/change-password-email', verifyChangePasswordEmail)
 router.put('/change-password-otp/:id', verifyChangePasswordOTP)
 router.put('/change-password/:id', verifyChangePassword);
-router.put('/updateaccount',upload.single('imageUrl'), updateUserProfile);
-//router.put('/profileimage/:id', upload.single('imageUrl'), createUserImage)
+router.put('/updateaccount', updateUserProfile);
+router.put('/profileimage', upload.single('image'), createUserImage)
 
 export default router
