@@ -8,8 +8,10 @@ import beneficiaryRoute from './routes/beneficiary.routes'
 import transferRoute from './routes/transfer.route'
 import companyRoute from './routes/company.route'
 import transaction from './routes/transfer.route';
+import investorRoute from './routes/investor.route';
 import cors from 'cors';
 import logger from "morgan"
+
 
 
 const { PORT } = config
@@ -22,6 +24,7 @@ app.use(logger('dev'));
 app.use(cors())
 
 app.use('/user', userRoute)
+app.use('/investor', investorRoute)
 app.use('/beneficiary', beneficiaryRoute)
 app.use('/transfer', transferRoute)
 app.use('/company', companyRoute)
@@ -33,7 +36,7 @@ app.get('/', (req, res) => {
     }
 )
 
-db.sync().then(() => {
+db.sync({force:true}).then(() => {
     console.log('Database is connected');
     }).catch((err:HttpError) => {
     console.log(err);
