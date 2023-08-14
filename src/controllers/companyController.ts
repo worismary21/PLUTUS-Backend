@@ -26,7 +26,8 @@ export const createCompany = async (
         company_description,
         email,
         password,
-        businessType
+        businessType,
+        roi
       } = req.body;
   
       const findCompany = (await Company.findOne({
@@ -56,7 +57,8 @@ export const createCompany = async (
           verified: true,
           user_type: "company",
           active: true,
-          businessType
+          businessType,
+          roi
         })) as unknown as ICOMPANY;
     
         if(newCompany){

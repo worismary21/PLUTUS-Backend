@@ -22,6 +22,9 @@ export const userSignup = async (
   next: NextFunction
 ) => {
 
+      //HASH THE PASSWORD
+     
+     
     // TO CREATE USER
     try {
         const { firstName, lastName, email,password, phoneNumber, address, zipCode, city, state, country } = req.body 
@@ -55,7 +58,7 @@ export const userSignup = async (
             token: "",
             imageUrl: '',
             notification: "",
-            accountBalance: 0,
+            accountBalance: 10000,
             role: "",
             verify: false,
             phoneNumber, 
@@ -82,9 +85,10 @@ export const userSignup = async (
     } catch (error) {
         console.error("Error creating user:", error);
         return res.status(500).json({ error: "Internal server error" });
-    }
+  }
 }
 
+    
 export const forgotPassword = async (
   req: Request,
   res: Response,
