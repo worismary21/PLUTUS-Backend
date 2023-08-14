@@ -1,6 +1,6 @@
 import { DataTypes, Model, Sequelize } from "sequelize"
 import { db } from "../config"
-import Investment, { INVESTMENT } from "./investment"
+import Investment from "./investment"
 import Company from "./company"
 
 type Saving = {

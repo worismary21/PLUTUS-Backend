@@ -8,6 +8,6 @@ export interface UserInterface {
     country:string;
     gender:string;
     address: string;
-   password: string;
-   resetLink: string;
+    password: string;
+    resetLink: string;
   }

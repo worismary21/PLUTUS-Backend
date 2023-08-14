@@ -6,8 +6,10 @@ import config from "./config/dbConfig";
 import userRoute from './routes/users.routes';
 import beneficiaryRoute from './routes/beneficiary.routes'
 import transferRoute from './routes/transfer.route'
+import companyRoute from './routes/company.route'
 import transaction from './routes/transfer.route';
 import cors from 'cors';
+import logger from "morgan"
 
 
 const { PORT } = config
@@ -16,11 +18,13 @@ dotenv.config()
 
 const app = express()
 app.use(express.json());
+app.use(logger('dev'));
 app.use(cors())
 
 app.use('/user', userRoute)
 app.use('/beneficiary', beneficiaryRoute)
 app.use('/transfer', transferRoute)
+app.use('/company', companyRoute)
 app.use('/transactions', transaction)
 
 
