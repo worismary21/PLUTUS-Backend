@@ -172,12 +172,7 @@ export const deleteUserByAdmin = async (req: Request,
   }
   }
  
-  export const getAllUsersByAdmin = async (req: Request, res: Response, next: NextFunction) =>{
-            try {
-              // const getAllUsersByAdmin = User.findAll({})
-              // if (!getAllUsersByAdmin){
-              //   res.status(400).json({})
-              // }
+  export const getAllUsersByAdmin = async (req: Request, res: Response, next: NextFunction) =>{ 
               try {
                 let page = 1;
                 if (req.query.page) {
@@ -211,8 +206,5 @@ export const deleteUserByAdmin = async (req: Request,
                   Error: "Internal Server Error",
                 });
               }
-            } catch (error) {
-              
             } 
-  }
   

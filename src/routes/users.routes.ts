@@ -26,8 +26,8 @@ router.put('/updateaccount', updateUserProfile);
 router.put('/profileimage', upload.single('image'), createUserImage)
 router.post("/company", isAdmin, createCompany);
 router.get("/get", getUsersByAdmin);
-router.get("/getAllUsersByAdmin", getAllUsersByAdmin)
-router.delete("/deleteUser/:id",deleteUserByAdmin)
+router.get("/getAllUsersByAdmin", isAdmin, getAllUsersByAdmin)
+router.delete("/deleteUser/:id",isAdmin, deleteUserByAdmin)
 
 router.get("/balance", auth, getUsersBalance);
 
