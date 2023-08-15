@@ -1,5 +1,6 @@
 import { DataTypes, Model, Sequelize } from "sequelize"
 import { db } from "../config"
+import Investor from "./investor"
 
 
 export type ICOMPANY = {
@@ -15,13 +16,18 @@ export type ICOMPANY = {
     user_type: string,
     active:boolean,
     businessType:string,
+    roi:number
 }
 
-class Company extends Model<ICOMPANY>{}
+class Company extends Model<ICOMPANY>{
+    public static associate(models: { Investor: typeof Investor }): void {
+        Company.hasMany(models.Investor, {foreignKey:'companyId', as:'Company'} )
+    }
+}
 
 Company.init({
     id:{
-        type:DataTypes.STRING,
+        type:DataTypes.UUID,
         primaryKey:true,
         allowNull:false
     },
@@ -68,10 +74,14 @@ Company.init({
    businessType:{
     type:DataTypes.STRING,
     allowNull:false,
-},
+    },
+    roi:{
+        type:DataTypes.FLOAT,
+        allowNull:false
+    },
 }, {
     sequelize:db,
-    tableName:"CompanyInfo"
+    tableName:"Company"
 })
 
 export default Company
