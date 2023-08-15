@@ -165,9 +165,54 @@ export const deleteUserByAdmin = async (req: Request,
       .status(404)
       .json({ message: 'user with id ${req.params.id} not found'});
      await User.destroy({ where: {id: userId}});
-    return res.status(200).json({ msg: 'user deleted successfully'})
+    return res.status(200).json({ message: 'user deleted successfully'})
   } catch (err:any){
      console.log(err.message);
-     return res.status(500).json ({msg: 'Internal Server Error'});
+     return res.status(500).json ({message: 'Internal Server Error'});
   }
   }
+ 
+  export const getAllUsersByAdmin = async (req: Request, res: Response, next: NextFunction) =>{
+            try {
+              // const getAllUsersByAdmin = User.findAll({})
+              // if (!getAllUsersByAdmin){
+              //   res.status(400).json({})
+              // }
+              try {
+                let page = 1;
+                if (req.query.page) {
+                  page = parseInt(req.query.page as string);
+                  if (Number.isNaN(page)) {
+                    return res.status(400).json({
+                      message: "Invalid page number",
+                    });
+                  }
+                }  
+            
+                const pageSize = 10;
+                const offset = (page - 1) * pageSize;
+            
+                const getUsersAdmin = await User.findAll();
+                const totalPages = Math.ceil(getUsersAdmin.length / pageSize);
+            
+                if (page > totalPages) {
+                  page = totalPages;
+                }
+                const allUsers = getUsersAdmin.slice(offset, page * pageSize);
+            
+                return res.status(200).json({
+                  allUsers,
+                  currentPage: page,
+                  totalPages,
+                });
+              } catch (err) {
+                console.error("Error executing getUsers:", err);
+                return res.status(500).json({
+                  Error: "Internal Server Error",
+                });
+              }
+            } catch (error) {
+              
+            } 
+  }
+  
