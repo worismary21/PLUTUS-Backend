@@ -1,6 +1,6 @@
 import { DataTypes, Model, Sequelize } from "sequelize"
 import { db } from "../config"
-// import Investment, { INVESTMENT } from "./investment"
+import Investment from "./investment"
 import Company from "./company"
 
 type Saving = {
@@ -18,8 +18,7 @@ export type INVESTOR = {
     expectedReturn:number,
     monthlyReturn:number,
     active: boolean,
-    companyId:string,
-    otp:string,
+    companyId:string
 }
 
 class Investor extends Model<INVESTOR>{
@@ -66,16 +65,12 @@ Investor.init({
         type:DataTypes.BOOLEAN,
         allowNull:false
     },
-    otp:{
-        type:DataTypes.STRING,
-        allowNull:true
-   },
     companyId:{
-        type:DataTypes.STRING,
+        type:DataTypes.UUID,
         references: {
             model: Company,
             key: "id"
-    },
+        }
     }
 
 
