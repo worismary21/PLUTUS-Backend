@@ -48,7 +48,6 @@ export const getUsersBalance = async(req:Request, res:Response) => {
 export const getUsersInfo = async(req:Request, res:Response) => {
     try{
         const token:any = req.headers.authorization
-
             const payload = token.split(" ")[1]
             const user_details:any = jwt.verify(payload, process.env.APP_SECRET!)
         
