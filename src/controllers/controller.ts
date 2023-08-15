@@ -30,11 +30,12 @@ export const userSignup = async (
         const { firstName, lastName, email,password } = req.body 
        
         //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
-        const existingUser = await User.findOne({ where: { email } });
+        const existingUser = await User.findOne({ where: { email: email } });
         if (existingUser) {
             return res.status(400).json({ error: "Email already exists" });
         }
 
+      
         //HASH THE PASSWORD
        
         const hashPassword: string = await hashedPassword(password);
