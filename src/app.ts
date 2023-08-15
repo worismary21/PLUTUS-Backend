@@ -36,12 +36,13 @@ app.get('/', (req, res) => {
     }
 )
 
-db.sync({force:true}).then(() => {
+db.sync().then(() => {
     console.log('Database is connected');
     }).catch((err:HttpError) => {
     console.log(err);
 });
 
+// {force:true}
 
 const port = PORT 
 

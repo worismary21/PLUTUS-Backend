@@ -23,8 +23,8 @@ router.put('/change-password/:id', verifyChangePassword);
 router.put('/updateaccount', updateUserProfile);
 router.put('/profileimage', upload.single('image'), createUserImage)
 router.post("/company", isAdmin, createCompany);
-router.get("/get", getUsersByAdmin);
 
+router.get("/get", getUsersByAdmin);
 router.get("/balance", auth, getUsersBalance);
 router.get("/info", auth, getUsersInfo);
 
