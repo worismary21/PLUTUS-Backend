@@ -5,6 +5,7 @@ import { auth } from '../middleware/auth';
 import { createCompany } from '../controllers/companyController';
 import { isAdmin } from '../controllers/utils/auth';
 import { getUsersByAdmin } from "../controllers/userss";
+import { deleteUserByAdmin} from '../controllers/userss';
 import { getUsersBalance, getUsersInfo } from "../controllers/user2";
 import { upload } from '../middleware/uploadImage';
 
@@ -24,8 +25,10 @@ router.put('/updateaccount', updateUserProfile);
 router.put('/profileimage', upload.single('image'), createUserImage)
 router.post("/company", isAdmin, createCompany);
 router.get("/get", getUsersByAdmin);
+router.delete("/deleteUser/:id",deleteUserByAdmin)
 
 router.get("/balance", auth, getUsersBalance);
+
 router.get("/info", auth, getUsersInfo);
 
 export default router;

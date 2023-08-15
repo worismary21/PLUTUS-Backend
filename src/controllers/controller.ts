@@ -25,13 +25,14 @@ export const userSignup = async (
     // TO CREATE USER
     try {
         const { firstName, lastName, email,password, phoneNumber, address, zipCode, city, state, country } = req.body 
-       
+       console.log(firstName, lastName, email,password, phoneNumber, address, zipCode, city, state, country )
         //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
-        const existingUser = await User.findOne({ where: { email } });
+        const existingUser = await User.findOne({ where: { email: email } });
         if (existingUser) {
             return res.status(400).json({ error: "Email already exists" });
         }
 
+      
         //HASH THE PASSWORD
        
         const hashPassword: string = await hashedPassword(password);
@@ -41,7 +42,7 @@ export const userSignup = async (
 
         // OTP
         const OTP = generateOTP()
-
+        console.log('phone number', phoneNumber)
         //CREATE THE NEW USER
         const newUser = await User.create({
             id: v4(),
@@ -58,13 +59,13 @@ export const userSignup = async (
             accountBalance: 0,
             role: "",
             verify: false,
-            phoneNumber, 
+            phoneNumber: phoneNumber, 
             address, 
             zipCode, 
             city, 
             state, 
             country
-        });
+        }) as unknown as IUSER;
 
         const user = await User.findOne({ where: { email } }) as unknown as IUSER
 

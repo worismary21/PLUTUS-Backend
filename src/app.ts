@@ -20,7 +20,6 @@ const app = express()
 app.use(express.json());
 app.use(logger('dev'));
 app.use(cors())
-
 app.use('/user', userRoute)
 app.use('/beneficiary', beneficiaryRoute)
 app.use('/transfer', transferRoute)
