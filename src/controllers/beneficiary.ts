@@ -51,6 +51,10 @@ export const createBeneficiaries = async (
 
      if(validating_beneficiary){
       if(!checking_existing_beneficiary){
+        res.status(400).json({
+          message: "Beneficiary Already Exists"
+        })
+      }else{
         const newBeneficiary = await Beneficiary.create({
           id:v4(),
           userId: user_id,
@@ -61,11 +65,7 @@ export const createBeneficiaries = async (
           message: "Beneficiary created successfully",
           data: newBeneficiary
         });
-      }else{
       }
-      res.status(400).json({
-        message: "Beneficiary Already Exists"
-      })
      }else{
       res.status(400).json({
         message: "Account Number doesn't Match"
