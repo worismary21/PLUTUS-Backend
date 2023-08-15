@@ -44,3 +44,15 @@ export const emailHtml = (email:string, OTP:string)=>{
 
                     return mail
 }
+export const emailHtmlForCompany = (companyName:string, OTP:string)=>{
+    const mail = `<h1>Welcome to Plutus<h1>
+                    <p>Hello, ${companyName}</p><br>
+                    <p> Thank you for registering your company with Plutus. Here you have access to attract a lot of investors to your company and scale your business so high.</p>
+                    <p>Please use this code: ${OTP} when logging in.</p><br>
+                    <p>Thank You</p>
+                    <p>Best Regards,</p>
+                    <p>From </P>
+                    <P>Team Plutus</p>`
+
+                    return mail
+}

@@ -1,18 +1,14 @@
 import { DataTypes, Model, Sequelize } from "sequelize"
 import { db } from "../config"
-import Investment from "./investment"
 import Company from "./company"
 
-type Saving = {
-    id:string,
-    amount:number,
-}
 
-export type INVESTOR = {
+
+export type TRANSACTIONS = {
     id:string,
-    firstName:string,
-    lastName:string,
-    accountNumber:string,
+    transactionId:string,
+    senderAccountNum:string,
+    receiverAccountNum:string,
     email:string,
     investedCapital:number,
     expectedReturn:number,
@@ -21,27 +17,27 @@ export type INVESTOR = {
     companyId:string
 }
 
-class Investor extends Model<INVESTOR>{
+class Transaction extends Model<TRANSACTIONS>{
     public static associate(models: { Company: typeof Company }): void {
-        Investor.belongsTo(models.Company, {foreignKey:'companyId', as:'Company'} )
+     Transaction.belongsTo(models.Company, {foreignKey:'companyId', as:'Company'} )
     }
 }
 
-Investor.init({
+Transaction.init({
     id:{
         type:DataTypes.UUID,
         primaryKey:true,
         allowNull:false
     },
-    firstName:{
+    transactionId:{
         type:DataTypes.STRING,
         allowNull:false
     },
-    lastName:{
+    senderAccountNum:{
         type:DataTypes.STRING,
         allowNull:false
     },
-    accountNumber:{
+    receiverAccountNum:{
         type:DataTypes.STRING,
         allowNull:true
     },
@@ -76,12 +72,12 @@ Investor.init({
 
 }, {
     sequelize:db,
-    tableName:"Investor",
-    modelName:"Investor"
+    tableName:"Transactions",
+    modelName:"Transactions"
 })
 
 
 
 
 
-export default Investor
+export default Transaction

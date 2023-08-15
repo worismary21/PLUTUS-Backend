@@ -1,63 +1,75 @@
 import express, { Request, Response, NextFunction } from "express";
-import Company, { BusinessType, ICOMPANY } from "../model/company";
-import User, { IUSER }  from '../model/user'
-import {v4} from "uuid";
-import { hashedPassword, tokenGenerator, verifyToken } from './utils/auth';
-import { genAccount} from "./utils/auth";
-import { generateOTP } from './utils/auth'
-import { emailHtml, sendmail } from './utils/notifications';
-import jwt, { JwtPayload } from 'jsonwebtoken'
-import nodemailer from 'nodemailer'
-import dotenv from 'dotenv';
+import Company, { ICOMPANY } from "../model/company";
+import User, { IUSER } from "../model/user";
+import { v4 } from "uuid";
+import { hashedPassword, tokenGenerator, verifyToken } from "./utils/auth";
+import { genAccount } from "./utils/auth";
+import { generateOTP } from "./utils/auth";
+import { emailHtml, sendmail } from "./utils/notifications";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 import Joi from "joi";
-import bcrypt from 'bcrypt'
+import bcrypt from "bcrypt";
 
 dotenv.config();
 // import {database} from '../config/index'
 //notes
 
-export const userSignup = async (req: Request, res: Response, next: NextFunction) => { 
-
-  // TO CREATE USER
-  try {
-      const { firstName, lastName, email,password } = req.body 
-     
-      //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
-      const existingUser = await User.findOne({ where: { email } });
-      if (existingUser) {
-          return res.status(400).json({ error: "Email already exists" });
-      }
+export const userSignup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
 
       //HASH THE PASSWORD
      
-      const hashPassword: string = await hashedPassword(password);
+     
+    // TO CREATE USER
+    try {
+        const { firstName, lastName, email,password } = req.body 
+       
+        //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: "Email already exists" });
+        }
 
-      // Account number
-      const accNumber: string = genAccount();
+        //HASH THE PASSWORD
+       
+        const hashPassword: string = await hashedPassword(password);
 
-      // OTP
-      const OTP = generateOTP()
+        // Account number
+        const accNumber: string = genAccount();
 
-      //CREATE THE NEW USER
-      const newUser = await User.create({
-          id: v4(),
-          firstName,
-          lastName,
-          email,
-          password: hashPassword,
-          accountNumber: accNumber,
-          savingsWallet: {id:v4(), amount:0},
-          otp: OTP,
-          token: "",
-          imageUrl: "",
-          notification: "",
-          accountBalance: 100000,
-          role: "",
-          verify: false
-      });
+        // OTP
+        const OTP = generateOTP()
 
-      const user = await User.findOne({ where: { email } }) as unknown as IUSER
+        //CREATE THE NEW USER
+        const newUser = await User.create({
+            id: v4(),
+            firstName,
+            lastName,
+            email,
+            password: hashPassword,
+            accountNumber: accNumber,
+            savingsWallet: {id:v4(), amount:0},
+            otp: OTP,
+            token: "",
+            imageUrl: '',
+            notification: "",
+            accountBalance: 10000,
+            role: "user",
+            verify: false,
+            phoneNumber: "", 
+            address: "", 
+            zipCode: "", 
+            city:"", 
+            state: "", 
+            country:""
+        });
 
+        const user = await User.findOne({ where: { email } }) as unknown as IUSER
 
         const token = jwt.sign({ email: user.email, id: user.id }, process.env.APP_SECRET!, {
             expiresIn: '1d'})
@@ -68,84 +80,104 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
         return res.status(200).json({
             message:`User created successfully`,
             newUser,
-            token,
-            role: user.role
+            token
         });
     } catch (error) {
         console.error("Error creating user:", error);
         return res.status(500).json({ error: "Internal server error" });
-    }
-    // const user = await Users.findAll();
-    // console.log(user)
+  }
 }
 
-export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
-  const { email} = req.body;
+    
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email } = req.body;
   try {
-      const user = await User.findOne({where:{email}}) as unknown as IUSER
-      if (!user) {
-          return res.status(400).json({error: "User does not exist!"});
+    const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
+    if (!user) {
+      return res.status(400).json({ error: "User does not exist!" });
+    }
+    const token = jwt.sign(
+      { email: user.email, id: user.id },
+      process.env.APP_SECRET!,
+      {
+        expiresIn: "10m",
       }
-      const token = jwt.sign({ email: user.email, id: user.id }, process.env.APP_SECRET!, {
-          expiresIn: '10m'})
-     
-          const html = `
+    );
+
+    const html = `
               <h2>Please click on given link to reset your password</h2>
               <p>${process.env.CLIENT_URL}/resetpassword/${token}</p>
-          `
-    
+          `;
 
-      await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html)
-      return res.status(200).json({
-          message: "Verification Sent",
-          method:req.method
-      })
-      // return user.updateOne({ resetLink: token }, function (error, success) {
-      //     if (error) {
-      //         return res.status(400).json({ error: "result password link error" })
-      //     } else {
+    await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html);
+    return res.status(200).json({
+      message: "Verification Sent",
+      method: req.method,
+    });
+    // return user.updateOne({ resetLink: token }, function (error, success) {
+    //     if (error) {
+    //         return res.status(400).json({ error: "result password link error" })
+    //     } else {
 
-      //     }
-      // });
-
+    //     }
+    // });
   } catch (error) {
-      console.error(error);
+    console.error(error);
   }
-  res.json("Recover password")
-}
-
-export const verifyUser =  async(req: JwtPayload, res: Response, next: NextFunction)=>{
- try{
-    const {id} = req.user
-    const {otp} = req.body
+  res.json("Recover password");
+};
 
 
-    //check if user exist (user.findOne)
-    const user = (await User.findOne({ where: { id } })) as unknown as IUSER;
-    if (!user) return res.status(400).json({ error: "User not found" });
-    if (user.otp !== otp) return res.status(400).json({ msg: `Invalid Otp` });
-    if (user.otp === otp) {
-      user.verify = true;
-      user.otp = "0";
-      return res.status(200).json({
-        msg: `User verified`,
-        user,
-      });
+export const verifyUser = async (
+  req: JwtPayload,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.user;
+    const { otp } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ where: { id } }) as unknown as IUSER
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
     }
-    //if not, throw errow
 
-    //verify otp check(otp == user.otp)
+    // Verify OTP
+    if (user.otp !== otp) {
+      return res.status(400).json({ msg: "Invalid OTP" });
+    }
 
-    //update verify status key to true
+    // Update user verification status
+    await User.update(
+      {
+       verify: true
+      },
+      {
+        where: { id: id }
+      }
+    )
+
+    return res.status(200).json({
+      msg: "User verified",
+    });
   } catch (err: any) {
-    console.log(err.message);
+    console.error(err.message);
     return res.status(500).json({
-      Error: `Internal Server Error`,
+      Error: "Internal Server Error",
     });
   }
 };
 
-export const loginUser = async (req: Request,res: Response,next: NextFunction) => {
+export const loginUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const schema = Joi.object({
       email: Joi.string().email().required(),
@@ -157,30 +189,35 @@ export const loginUser = async (req: Request,res: Response,next: NextFunction) =
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
-   
-    console.log('hello')
+
+    console.log("hello");
     const { email, password } = req.body;
     const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
-    
+
     if (!user) {
       return res
         .status(404)
         .json({ message: `User does not exist, please register` });
     }
 
-    
-    if (user && user.verify) {
-      const validate = await bcrypt.compare(password, user.password);
-      
-      if (validate) {
-      
-        const token = jwt.sign({ email: user.email, id: user.id }, process.env.APP_SECRET!, { expiresIn: '1d' });
 
-        console.log("hello")
+    
+    if (user && user.verify === true) {
+      const validate = await bcrypt.compare(password, user.password);
+
+      if (validate) {
+        const token = jwt.sign(
+          { email: user.email, id: user.id },
+          process.env.APP_SECRET!,
+          { expiresIn: "1d" }
+        );
+
+        console.log("hello");
         return res.status(200).json({
           message: `Login successfully`,
           email: user.email,
           token,
+          role: user.role
         });
       }
 
@@ -190,6 +227,10 @@ export const loginUser = async (req: Request,res: Response,next: NextFunction) =
         });
       }
     }
+
+    return res.status(400).json({
+      message: `User Not Verified`,
+    });
   } catch (err) {
     return res.status(500).json({
       message: `Internal Server Error`,
@@ -198,26 +239,36 @@ export const loginUser = async (req: Request,res: Response,next: NextFunction) =
   }
 };
 
+export const resendOTP = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { token } = req.params;
 
-export const resendOTP = async(req: Request, res: Response, next: NextFunction) =>{
-    try{
+    const verified = jwt.verify(
+      token,
+      process.env.APP_SECRET!
+    ) as unknown as JwtPayload;
 
-    const {token} = req.params
-
-    const verified = jwt.verify(token, process.env.APP_SECRET! ) as unknown as JwtPayload
-
-    if(!verified){
-        return res.status(400).json({
-            message:"invalid token"
-        })
+    if (!verified) {
+      return res.status(400).json({
+        message: "invalid token",
+      });
     }
 
     const OTP = generateOTP();
 
     await User.update({ otp: OTP }, { where: { email: verified.email } });
 
-    const html = emailHtml(verified.email, OTP)
-    await sendmail(`${process.env.DEV_GMAIL_USER}`, verified.email, "Welcome", html)
+    const html = emailHtml(verified.email, OTP);
+    await sendmail(
+      `${process.env.DEV_GMAIL_USER}`,
+      verified.email,
+      "Welcome",
+      html
+    );
 
     return res.status(200).json({ message: "resendOTP successful" });
   } catch (error) {
@@ -249,15 +300,15 @@ export const verifyChangePasswordEmail = async (
     // Generate token for the user (assuming generateToken is asynchronous)
     const otp = await generateOTP(); // Get plain object of the user from the query result
 
-        const token = tokenGenerator(user)
-    
-        // Compose mail
-        const mailOptions = {
-            from: process.env.DEV_DEV_GMAIL_USER!,
-            to: user.get().email,
-            subject: 'Password Reset OTP',
-            text: `<h1>Your OTP for password reset is: ${otp}</h1>`
-        };
+    const token = tokenGenerator(user);
+
+    // Compose mail
+    const mailOptions = {
+      from: process.env.DEV_DEV_GMAIL_USER!,
+      to: user.get().email,
+      subject: "Password Reset OTP",
+      text: `<h1>Your OTP for password reset is: ${otp}</h1>`,
+    };
 
     await User.update({ otp }, { where: { email } });
 
@@ -302,6 +353,8 @@ export const verifyChangePasswordOTP = async (
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
 
 export const verifyChangePassword = async (
   req: Request,
@@ -360,24 +413,29 @@ export const verifyChangePassword = async (
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-export const createAdmin = async(req: Request, res: Response, next: NextFunction)=>{
-    try {
-        const { firstName, lastName, email, role, password } = req.body 
-       
-        //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
-        const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) {
-            return res.status(400).json({ error: "Email already exists" });
-        }
-        
-        if (role !== 'admin') {
-            return res.status(400).json({
-                message: `Invalid role. Role must be 'admin'`
-            })
-        }
-        //HASH THE PASSWORD
-       
-        const hashPassword: string = await hashedPassword(password);
+
+export const createAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { firstName, lastName, email, role, password } = req.body;
+
+    //CHECK IF THE NEW USER EMAIL ALREADY EXISTS
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
+
+    if (role !== "admin") {
+      return res.status(400).json({
+        message: `Invalid role. Role must be 'admin'`,
+      });
+    }
+    //HASH THE PASSWORD
+
+    const hashPassword: string = await hashedPassword(password);
 
     // Account number
     const accNumber: string = genAccount();
@@ -388,39 +446,143 @@ export const createAdmin = async(req: Request, res: Response, next: NextFunction
     // Token
     // const tokens = tokenGenerator({ firstName, lastName, email, role });
 
-        //CREATE THE NEW USER
-        const newUser = await User.create({
-            id: v4(),
-            firstName,
-            lastName,
-            email,
-            password: hashPassword,
-            accountNumber: accNumber,
-            savingsWallet: {id:v4(), amount:0},
-            otp: OTP,
-            token:'',
-            imageUrl: "",
-            notification: "",
-            accountBalance: 0,
-            role:"admin",
-            verify: false
-        }) as unknown as IUSER
+    //CREATE THE NEW USER
+    const newUser = (await User.create({
+      id: v4(),
+      firstName,
+      lastName,
+      email,
+      password: hashPassword,
+      accountNumber: accNumber,
+      savingsWallet: { id: v4(), amount: 0 },
+      otp: OTP,
+      token: "",
+      imageUrl: "",
+      notification: "",
+      accountBalance: 0,
+      phoneNumber:'',
+      role: "admin",
+      verify: true,
+      address: "", 
+      zipCode: "", 
+      city: "",
+      state:"",
+      country: "",
+    })) as unknown as IUSER;
 
-        //RETURN NEW USER
-        const html = emailHtml(email, OTP)
-            await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html)
+    //RETURN NEW USER
+    const html = emailHtml(email, OTP);
+    await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html);
 
-            const token = tokenGenerator({ email: newUser.email, id: newUser.id })
-        return res.status(200).json({
-            message:`User created successfully`,
-            newUser,
-            token
-        });
-    } catch (error) {
-        console.error("Error creating user:", error);
-        return res.status(500).json({ error: "Internal server error" });
-
-    }
+    const token = tokenGenerator({ email: newUser.email, id: newUser.id });
+    return res.status(200).json({
+      message: `User created successfully`,
+      newUser,
+      token,
+    });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
+};
+//
+
+export const updateUserProfile = async(req: Request, res: Response, next: NextFunction) => { 
+  try {
+     
+  
+     
+  let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
+
+
+    console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
+
+  const updateField: Partial<IUSER> = {}
+
+  if(!firstName){
+      updateField.firstName = firstName
+  }
+  if(!lastName){
+      updateField.lastName = lastName
+  }
+  if(!email){
+      updateField. email =  email
+  }
+  if(!phoneNumber){
+      updateField. phoneNumber =  phoneNumber
+  }
+
+  // if(!imageUrl){
+  //     updateField.imageUrl =  req.file
+  // }
+
+  if(!address){
+      updateField. address =  address
+  }
+  if(!zipCode){
+      updateField. zipCode =  zipCode
+  }
+  if(!city){
+      updateField. city =  city
+  }
+  if(!state){
+      updateField. state =  state
+  }
+  if(!country){
+      updateField. country =  country
+  }
+
+  const updatedUser = await User.update(updateField,  {where: {email: email }} ) as unknown as IUSER
+
+     if (updatedUser) {
+        return res.status(200).json({
+           message: `User updated successfully`,
+           data: updatedUser
+        });
+     }
+
+     return res.status(401).json({
+        message: `Update operation failed`
+     });
+  } catch (error: any) {
+     console.log(error.message);
+     return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+
+export const createUserImage = async (req: Request, res: Response) =>{
+  try{
+
+      const {email} = req.body
+
+  console.log("email ",email)
+
+  const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
+
+  const updateField: Partial<IUSER> = {}
+
+
+  const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
+
+  if (updateUserImage) {
+      return res.status(200).json({
+         message: `User updated successfully`,
+         data: updateUserImage
+      });
+   }
+
+   return res.status(401).json({
+      message: `Update operation failed`
+   });
+
+  }catch(error){
+      return res.status(500).json({
+          message: `Error Uploading Imsge`
+       });
+  }
+
+}
 
 
