@@ -172,6 +172,7 @@ export const deleteUserByAdmin = async (req: Request,
   }
   }
  
+ 
   export const getAllUsersByAdmin = async (req: Request, res: Response, next: NextFunction) =>{ 
               try {
                 let page = 1;

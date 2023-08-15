@@ -48,7 +48,6 @@ export const getUsersBalance = async(req:Request, res:Response) => {
 export const getUsersInfo = async(req:Request, res:Response) => {
     try{
         const token:any = req.headers.authorization
-    
             const payload = token.split(" ")[1]
             const user_details:any = jwt.verify(payload, process.env.APP_SECRET!)
         
@@ -58,12 +57,16 @@ export const getUsersInfo = async(req:Request, res:Response) => {
         
                 const user_account_Balance = user_info.accountBalance
                 const user_account_Savings_Wallet_Balance = user_info.savingsWallet.amount
+                const user_account_number = user_info.accountNumber
+                const user_account_name = `${user_info.firstName} ${user_info.lastName}`
     
                 const user_transactions = await Transfers.findAll({where: { senderId: user_id}})
                 const user_beneficiary = await Beneficiary.findAll({ where: { userId: user_id}})
         
                 return res.status(200).json({
                     data: {
+                        "account_name": user_account_name,
+                        "account_number": user_account_number,
                         "account_balance": user_account_Balance,
                         "savings_wallet": user_account_Savings_Wallet_Balance,
                         "transactions_history": user_transactions,

@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 
 import Company from "../model/company";
 import investment_Records from '../model/investmentRecord'
+import Investor from "../model/investor";
 
 
 dotenv.config();
@@ -296,8 +297,23 @@ export const transferToInvestmentCompany = async (
             investor_name: user_firstName + " " + user_lastName,
             investor_id: user_id,
             investment_company_id: company_id,
-            transaction_status: "SUCCESSFUL"
+            transaction_status: "SUCCESSFUL",
           })
+
+          await Investor.create({
+            id:v4(),
+            firstName:user_details.firstName,
+            lastName:user_details.lastName,
+            accountNumber:user_details.accountNumber,
+            email:user_details.email,
+            investedCapital:amount,
+            expectedReturn:amount * company_details.roi,
+            monthlyReturn:amount * company_details.roi / 4,
+            active: true,
+            companyId:company_id
+          })
+
+    
           return res.status(200).json({
             message: `Transfer SUCCESSFUL!!`,
             data: sucessful_transaction_record
