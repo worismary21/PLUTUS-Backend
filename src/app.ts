@@ -6,7 +6,8 @@ import config from "./config/dbConfig";
 import userRoute from './routes/users.routes';
 import beneficiaryRoute from './routes/beneficiary.routes'
 import transferRoute from './routes/transfer.route'
-import transaction from './routes/transfer.route';
+import transaction from './routes/transaction.route';
+// import transaction from './routes/transfer.route'
 import cors from 'cors';
 
 

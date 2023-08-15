@@ -359,7 +359,7 @@ export const verifyChangePassword = async (
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-export const createAdmin = async(req: Request, res: Response, next: NextFunction)=>{
+export const createAdmin = async(req: Request, res: Response, next: NextFunction)=>{ 
     try {
         const { firstName, lastName, email, role, password } = req.body 
        
@@ -401,7 +401,7 @@ export const createAdmin = async(req: Request, res: Response, next: NextFunction
             imageUrl: "",
             notification: "",
             accountBalance: 0,
-            role:"admin",
+            role,
             verify: false
         }) as unknown as IUSER
 

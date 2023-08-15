@@ -18,7 +18,7 @@ export const db = new Sequelize(
       dialectOptions: {
         encrypt: true,
         ssl: {
-          rejectUnauthorized: false,
+          rejectUnauthorized: true,
         },
       },
     }

@@ -8,6 +8,8 @@ dotenv.config();
 
 
 
+
+
 export const getAllExpenses = async (
      req: Request,
      res: Response,
@@ -50,13 +52,13 @@ export const getUserDetails = async (
 
           const user_Id = decodedToken.id
           
-
+          
           if(user_Id){
                const user_Details: any = await User.findOne({
                     where: {id: user_Id},
                })
                return res.status(200).json({
-                    message:"All user's details",
+                    message:"User's details",
                     user_Details
                })
           }else{
@@ -80,9 +82,9 @@ export const getAllIncome = async (
                const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
           
                const user_Id = decodedToken.id
+               const role = user_Id.role
 
-
-               if(user_Id){
+               if(user_Id && role === "admin"){
 
                     const user_Details: any = await User.findOne({
                          where: {id: user_Id},
@@ -125,8 +127,7 @@ export const getAllIncome = async (
           } catch (error) {
                console.error(error)
           }
-}
-
+};
 
 export const getAllTransactions = async (
      req: Request,
@@ -138,9 +139,9 @@ export const getAllTransactions = async (
                const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
           
                const user_Id = decodedToken.id
-            
+               const role = user_Id.role
 
-               if(user_Id){
+               if(user_Id && role === "admin"){
 
 
                     const user_Details: any = await User.findOne({
@@ -186,4 +187,4 @@ export const getAllTransactions = async (
           } catch (error) {
                console.error(error)
           }
-}
+};

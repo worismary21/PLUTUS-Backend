@@ -8,16 +8,16 @@ import { isAdmin } from '../controllers/utils/auth';
 const router = Router();
 
 router.post('/signup', userSignup);
-router.put('/update', forgotPassword);
-router.put('/resendotp/:token', resendOTP);
+router.put('/update',auth, forgotPassword);
+router.put('/resendotp/:token',auth, resendOTP);
 router.post('/login', loginUser);
 router.post('/adminSignup', createAdmin)
 router.put('/forgot-password', forgotPassword)
-router.post('/company',isAdmin, createCompany);
+router.post('/company',isAdmin,auth, createCompany);
 router.put('/verify-user',auth, verifyUser)
-router.put('/change-password-email', verifyChangePasswordEmail)
-router.put('/change-password-otp/:id', verifyChangePasswordOTP)
-router.put('/change-password/:id', verifyChangePassword)
+router.put('/change-password-email',auth, verifyChangePasswordEmail)
+router.put('/change-password-otp/:id',auth, verifyChangePasswordOTP)
+router.put('/change-password/:id',auth, verifyChangePassword)
 
 
 export default router
