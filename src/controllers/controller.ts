@@ -68,7 +68,8 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
         return res.status(200).json({
             message:`User created successfully`,
             newUser,
-            token
+            token,
+            role: user.role
         });
     } catch (error) {
         console.error("Error creating user:", error);
@@ -168,7 +169,7 @@ export const loginUser = async (req: Request,res: Response,next: NextFunction) =
     }
 
     
-    if (user) {
+    if (user && user.verify) {
       const validate = await bcrypt.compare(password, user.password);
       
       if (validate) {
