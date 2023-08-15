@@ -470,7 +470,7 @@ export const createAdmin = async (
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-//
+// 
 
 export const updateUserProfile = async(req: Request, res: Response, next: NextFunction) => { 
   try {
