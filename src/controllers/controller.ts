@@ -25,21 +25,10 @@ export const userSignup = async (
 
   // TO CREATE USER
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      phoneNumber,
-      address,
-      zipCode,
-      city,
-      state,
-      country,
-    } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
     //CHECK IF THE NEW USER EMAIL ALREADY EXISTS
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ where: { email: email } });
     if (existingUser) {
       return res.status(400).json({ error: "Email already exists" });
     }
@@ -68,14 +57,14 @@ export const userSignup = async (
       imageUrl: "",
       notification: "",
       accountBalance: 10000,
-      role: "",
+      role: "user",
       verify: false,
-      phoneNumber,
-      address,
-      zipCode,
-      city,
-      state,
-      country,
+      phoneNumber: "",
+      address: "",
+      zipCode: "",
+      city: "",
+      state: "",
+      country: "",
     });
 
     const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
@@ -153,27 +142,34 @@ export const verifyUser = async (
     const { id } = req.user;
     const { otp } = req.body;
 
-    //check if user exist (user.findOne)
+    // Check if user exists
     const user = (await User.findOne({ where: { id } })) as unknown as IUSER;
-    if (!user) return res.status(400).json({ error: "User not found" });
-    if (user.otp !== otp) return res.status(400).json({ msg: `Invalid Otp` });
-    if (user.otp === otp) {
-      user.verify = true;
-      user.otp = "0";
-      return res.status(200).json({
-        msg: `User verified`,
-        user,
-      });
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
     }
-    //if not, throw errow
 
-    //verify otp check(otp == user.otp)
+    // Verify OTP
+    if (user.otp !== otp) {
+      return res.status(400).json({ msg: "Invalid OTP" });
+    }
 
-    //update verify status key to true
+    // Update user verification status
+    await User.update(
+      {
+        verify: true,
+      },
+      {
+        where: { id: id },
+      }
+    );
+
+    return res.status(200).json({
+      msg: "User verified",
+    });
   } catch (err: any) {
-    console.log(err.message);
+    console.error(err.message);
     return res.status(500).json({
-      Error: `Internal Server Error`,
+      Error: "Internal Server Error",
     });
   }
 };
@@ -205,7 +201,7 @@ export const loginUser = async (
         .json({ message: `User does not exist, please register` });
     }
 
-    if (user) {
+    if (user && user.verify === true) {
       const validate = await bcrypt.compare(password, user.password);
 
       if (validate) {
@@ -220,6 +216,7 @@ export const loginUser = async (
           message: `Login successfully`,
           email: user.email,
           token,
+          role: user.role,
         });
       }
 
@@ -229,6 +226,10 @@ export const loginUser = async (
         });
       }
     }
+
+    return res.status(400).json({
+      message: `User Not Verified`,
+    });
   } catch (err) {
     return res.status(500).json({
       message: `Internal Server Error`,
@@ -458,7 +459,7 @@ export const createAdmin = async (
       accountBalance: 0,
       phoneNumber: "",
       role: "admin",
-      verify: false,
+      verify: true,
       address: "",
       zipCode: "",
       city: "",

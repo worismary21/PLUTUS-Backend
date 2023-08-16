@@ -8,8 +8,10 @@ import beneficiaryRoute from './routes/beneficiary.routes'
 import transferRoute from './routes/transfer.route'
 import companyRoute from './routes/company.route'
 import transaction from './routes/transfer.route';
+import investorRoute from './routes/investor.route';
 import cors from 'cors';
 import logger from "morgan"
+
 
 
 const { PORT } = config
@@ -20,8 +22,8 @@ const app = express()
 app.use(express.json());
 app.use(logger('dev'));
 app.use(cors())
-
 app.use('/user', userRoute)
+app.use('/investor', investorRoute)
 app.use('/beneficiary', beneficiaryRoute)
 app.use('/transfer', transferRoute)
 app.use('/company', companyRoute)
@@ -39,6 +41,7 @@ db.sync().then(() => {
     console.log(err);
 });
 
+// {force:true}
 
 const port = PORT 
 
