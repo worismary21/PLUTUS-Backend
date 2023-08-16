@@ -36,7 +36,7 @@
 //       if (decodedToken.email) {
 //         if (validatedCompany) {
 //           const companyAccountNumber = validatedCompany.accountNumber;
-  
+
 //           const sender_id = decodedToken.id;
 
 //           const sender_accountDetails: any = await User.findOne({
@@ -53,7 +53,7 @@
 //                 const successfulTransfer = await TransferToCompanyModel.create({
 //                     id: v4(),
 //                     userId: sender_id,
-//                     AccountNumber: AccountNumber, 
+//                     AccountNumber: AccountNumber,
 //                     amount,
 //                     companyName,
 //                     status: "SUCCESSFUL",
@@ -92,7 +92,7 @@
 //                   companyAccountNumber   !== expected_beneficiary_AccountBalance) {
 //                   const pending_transfer = await Transfers.create({
 //                     id: v4(),
-                    
+
 //                   });
 //                }
 //           }

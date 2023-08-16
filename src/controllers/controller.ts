@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import Company from "../model/company";
+import Company, { ICOMPANY } from "../model/company";
 import User, { IUSER } from "../model/user";
 import { v4 } from "uuid";
 import { hashedPassword, tokenGenerator, verifyToken } from "./utils/auth";
@@ -14,15 +14,29 @@ import bcrypt from "bcrypt";
 
 dotenv.config();
 // import {database} from '../config/index'
+//notes
 
 export const userSignup = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  //HASH THE PASSWORD
+
   // TO CREATE USER
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      phoneNumber,
+      address,
+      zipCode,
+      city,
+      state,
+      country,
+    } = req.body;
 
     //CHECK IF THE NEW USER EMAIL ALREADY EXISTS
     const existingUser = await User.findOne({ where: { email } });
@@ -53,9 +67,15 @@ export const userSignup = async (
       token: "",
       imageUrl: "",
       notification: "",
-      accountBalance: 0,
+      accountBalance: 10000,
       role: "",
       verify: false,
+      phoneNumber,
+      address,
+      zipCode,
+      city,
+      state,
+      country,
     });
 
     const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
@@ -80,8 +100,48 @@ export const userSignup = async (
     console.error("Error creating user:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
-  // const user = await Users.findAll();
-  // console.log(user)
+};
+
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email } = req.body;
+  try {
+    const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
+    if (!user) {
+      return res.status(400).json({ error: "User does not exist!" });
+    }
+    const token = jwt.sign(
+      { email: user.email, id: user.id },
+      process.env.APP_SECRET!,
+      {
+        expiresIn: "10m",
+      }
+    );
+
+    const html = `
+              <h2>Please click on given link to reset your password</h2>
+              <p>${process.env.CLIENT_URL}/resetpassword/${token}</p>
+          `;
+
+    await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html);
+    return res.status(200).json({
+      message: "Verification Sent",
+      method: req.method,
+    });
+    // return user.updateOne({ resetLink: token }, function (error, success) {
+    //     if (error) {
+    //         return res.status(400).json({ error: "result password link error" })
+    //     } else {
+
+    //     }
+    // });
+  } catch (error) {
+    console.error(error);
+  }
+  res.json("Recover password");
 };
 
 export const verifyUser = async (
@@ -149,7 +209,11 @@ export const loginUser = async (
       const validate = await bcrypt.compare(password, user.password);
 
       if (validate) {
-        const token = jwt.sign({ id: user.id }, "secret", { expiresIn: "1d" });
+        const token = jwt.sign(
+          { email: user.email, id: user.id },
+          process.env.APP_SECRET!,
+          { expiresIn: "1d" }
+        );
 
         console.log("hello");
         return res.status(200).json({
@@ -171,48 +235,6 @@ export const loginUser = async (
       Error: "/users/login",
     });
   }
-};
-
-export const forgotPassword = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { email } = req.body;
-  try {
-    const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
-    if (!user) {
-      return res.status(400).json({ error: "User does not exist!" });
-    }
-    const token = jwt.sign(
-      { email: user.email, id: user.id },
-      process.env.APP_SECRET!,
-      {
-        expiresIn: "10m",
-      }
-    );
-
-    const html = `
-                <h2>Please click on given link to reset your password</h2>
-                <p>${process.env.CLIENT_URL}/resetpassword/${token}</p>
-            `;
-
-    await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html);
-    return res.status(200).json({
-      message: "Verification Sent",
-      method: req.method,
-    });
-    // return user.updateOne({ resetLink: token }, function (error, success) {
-    //     if (error) {
-    //         return res.status(400).json({ error: "result password link error" })
-    //     } else {
-
-    //     }
-    // });
-  } catch (error) {
-    console.error(error);
-  }
-  res.json("Recover password");
 };
 
 export const resendOTP = async (
@@ -240,7 +262,7 @@ export const resendOTP = async (
 
     const html = emailHtml(verified.email, OTP);
     await sendmail(
-      `${process.env.GMAIL_USER}`,
+      `${process.env.DEV_GMAIL_USER}`,
       verified.email,
       "Welcome",
       html
@@ -280,7 +302,7 @@ export const verifyChangePasswordEmail = async (
 
     // Compose mail
     const mailOptions = {
-      from: process.env.DEV_GMAIL_USER!,
+      from: process.env.DEV_DEV_GMAIL_USER!,
       to: user.get().email,
       subject: "Password Reset OTP",
       text: `<h1>Your OTP for password reset is: ${otp}</h1>`,
@@ -387,6 +409,7 @@ export const verifyChangePassword = async (
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const createAdmin = async (
   req: Request,
   res: Response,
@@ -417,10 +440,10 @@ export const createAdmin = async (
     const OTP = generateOTP();
 
     // Token
-    const token = tokenGenerator({ firstName, lastName, email, role });
+    // const tokens = tokenGenerator({ firstName, lastName, email, role });
 
     //CREATE THE NEW USER
-    const newUser = await User.create({
+    const newUser = (await User.create({
       id: v4(),
       firstName,
       lastName,
@@ -429,61 +452,153 @@ export const createAdmin = async (
       accountNumber: accNumber,
       savingsWallet: { id: v4(), amount: 0 },
       otp: OTP,
-      token: token,
+      token: "",
       imageUrl: "",
       notification: "",
       accountBalance: 0,
-      role,
+      phoneNumber: "",
+      role: "admin",
       verify: false,
-    });
+      address: "",
+      zipCode: "",
+      city: "",
+      state: "",
+      country: "",
+    })) as unknown as IUSER;
 
     //RETURN NEW USER
     const html = emailHtml(email, OTP);
-    await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html);
+    await sendmail(`${process.env.DEV_GMAIL_USER}`, email, "Welcome", html);
+
+    const token = tokenGenerator({ email: newUser.email, id: newUser.id });
     return res.status(200).json({
       message: `User created successfully`,
       newUser,
+      token,
     });
   } catch (error) {
     console.error("Error creating user:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
-  // const user = await Users.findAll();
-  // console.log(user)
+};
+//
+
+export const updateUserProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      address,
+      zipCode,
+      city,
+      state,
+      country,
+    } = req.body;
+
+    console.log(
+      "image live   ",
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      address,
+      zipCode,
+      city,
+      state,
+      country
+    );
+
+    const updateField: Partial<IUSER> = {};
+
+    if (!firstName) {
+      updateField.firstName = firstName;
+    }
+    if (!lastName) {
+      updateField.lastName = lastName;
+    }
+    if (!email) {
+      updateField.email = email;
+    }
+    if (!phoneNumber) {
+      updateField.phoneNumber = phoneNumber;
+    }
+
+    // if(!imageUrl){
+    //     updateField.imageUrl =  req.file
+    // }
+
+    if (!address) {
+      updateField.address = address;
+    }
+    if (!zipCode) {
+      updateField.zipCode = zipCode;
+    }
+    if (!city) {
+      updateField.city = city;
+    }
+    if (!state) {
+      updateField.state = state;
+    }
+    if (!country) {
+      updateField.country = country;
+    }
+
+    const updatedUser = (await User.update(updateField, {
+      where: { email: email },
+    })) as unknown as IUSER;
+
+    if (updatedUser) {
+      return res.status(200).json({
+        message: `User updated successfully`,
+        data: updatedUser,
+      });
+    }
+
+    return res.status(401).json({
+      message: `Update operation failed`,
+    });
+  } catch (error: any) {
+    console.log(error.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
-// export const createCompany = async(req: Request, res: Response, next: NextFunction)=>{
-//     const {
-//         companyName,
-//         description,
-//         rateOfReturn,
-//         duration,
-//         email,
-//         password,
-//         verified,
-//         active,
-//         businessType
-//     } = req.body
+export const createUserImage = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
 
-//     const findCompany = await Company.findOne({ where: { companyName } });;
+    console.log("email ", email);
 
-//     if(findCompany){
-//         return res.status(400).json({
-//             message: `Company already exists`
-//         });
-//     };
-//     if(!findCompany){
-//         let newCompany = await Company.create({
-//             id: v4(),
-//             companyName,
-//             description,
-//             rateOfReturn,
-//             duration,
-//             email,
-//             password,
-//             verified,
-//             active,
-//             businessType
-//         });
-// }
-// }
+    const user = (await User.findOne({
+      where: { email: email },
+    })) as unknown as IUSER;
+
+    const updateField: Partial<IUSER> = {};
+
+    const updateUserImage = (await User.update(
+      { imageUrl: req.file?.path },
+      { where: { email: email } }
+    )) as unknown as IUSER;
+
+    if (updateUserImage) {
+      return res.status(200).json({
+        message: `User updated successfully`,
+        data: updateUserImage,
+      });
+    }
+
+    return res.status(401).json({
+      message: `Update operation failed`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: `Error Uploading Imsge`,
+    });
+  }
+};
