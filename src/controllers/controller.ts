@@ -586,5 +586,3 @@ export const createUserImage = async (req: Request, res: Response) =>{
   }
 
 }
-
-
