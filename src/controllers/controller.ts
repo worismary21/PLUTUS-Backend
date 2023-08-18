@@ -191,7 +191,6 @@ export const loginUser = async (
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    console.log("hello");
     const { email, password } = req.body;
     const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
 

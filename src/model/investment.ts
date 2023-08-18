@@ -7,7 +7,6 @@ enum Duration {
   SIX_MONTH = "6 Month",
   TWELVE_MONTH = "12 Month",
 }
-
 export interface InvestmentAttributes {
   id: string;
   company_id: string;
@@ -24,7 +23,7 @@ class Investment extends Model<InvestmentAttributes> {
   company_id: any;
   userId: any;
   public static associate() {
-    Investment.belongsTo(Company, { foreignKey: 'company_id', as: 'Company' });
+    Investment.belongsTo(Company, { foreignKey: "company_id", as: "Company" });
   }
 }
 
