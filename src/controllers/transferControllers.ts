@@ -181,62 +181,62 @@ export const transferToSavingsWallet = async (
 ) => {
   try {
 
-    const token: any = req.headers.authorization;
-    const token_info = token.split(" ")[1];
-    const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+    // const token: any = req.headers.authorization;
+    // const token_info = token.split(" ")[1];
+    // const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
 
-    if (decodedToken.email) {
-      const { amount } = req.body;
+    // if (decodedToken.email) {
+    //   const { amount } = req.body;
 
-      const user_id = decodedToken.id
-      const user_info:any = await User.findOne({ where: { id: user_id}})
+    //   const user_id = decodedToken.id
+    //   const user_info:any = await User.findOne({ where: { id: user_id}})
 
-      const user_savings_balance = user_info.savingsWallet
-      const user_balance_amount = user_savings_balance.amount
-      const user_accountBalance = user_info.accountBalance
+    //   const user_savings_balance = user_info.savingsWallet
+    //   const user_balance_amount = user_savings_balance.amount
+    //   const user_accountBalance = user_info.accountBalance
 
-      if(amount < user_accountBalance){
+    //   if(amount < user_accountBalance){
 
-      const new_Savings_Balance = user_balance_amount + amount
+    //   const new_Savings_Balance = user_balance_amount + amount
 
-      const savings_wallet_obj = { id: user_id, amount:new_Savings_Balance }
+    //   const savings_wallet_obj = { id: user_id, amount:new_Savings_Balance }
   
-      const current_savings_balance = await User.update(
-        { savingsWallet: savings_wallet_obj },
-        {
-          where: {
-            id: user_id 
-          },
-        }
-      );
+    //   const current_savings_balance = await User.update(
+    //     { savingsWallet: savings_wallet_obj },
+    //     {
+    //       where: {
+    //         id: user_id 
+    //       },
+    //     }
+    //   );
 
-     const user_new_balance = user_accountBalance - amount
+    //  const user_new_balance = user_accountBalance - amount
 
-      const updating_user_balance = await User.update(
-        { accountBalance:user_new_balance  },
-        {
-          where: {
-            id: user_id
-          },
-        }
-      );
+    //   const updating_user_balance = await User.update(
+    //     { accountBalance:user_new_balance  },
+    //     {
+    //       where: {
+    //         id: user_id
+    //       },
+    //     }
+    //   );
   
-      if(current_savings_balance && updating_user_balance){
-        return res.status(200).json({
-          message: "Amount Transferred to Savings Wallet"
-        })
-      }else{
-        return res.status(400).json({
-          message: "Transfer pending"
-        })
-      }
+    //   if(current_savings_balance && updating_user_balance){
+    //     return res.status(200).json({
+    //       message: "Amount Transferred to Savings Wallet"
+    //     })
+    //   }else{
+    //     return res.status(400).json({
+    //       message: "Transfer pending"
+    //     })
+    //   }
 
-      }else{
-        return res.status(400).json({
-          message: "You do not have sufficient balance to execute this savings transfer"
-        })
-      }
-    }
+    //   }else{
+    //     return res.status(400).json({
+    //       message: "You do not have sufficient balance to execute this savings transfer"
+    //     })
+    //   }
+    // }
   } catch (error) {
     console.error(error);
   }

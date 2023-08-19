@@ -1,6 +1,6 @@
 import express from 'express';
 import { transferToBeneficiary, transferToInvestmentCompany, transferToSavingsWallet} from "../controllers/transferControllers";
-import {trackSuccessfulTransaction, trackFailedTransaction} from '../controllers/userss'
+import {trackSuccessfulTransaction, trackFailedTransaction, DeleteTransactions} from '../controllers/userss'
 import { auth } from '../middleware/auth';
 const router = express.Router();
 
@@ -9,6 +9,8 @@ router.put('/savings', auth, transferToSavingsWallet);
 router.post('/investment', auth, transferToInvestmentCompany)
 router.get("/successfultransactions", auth, trackSuccessfulTransaction);
 router.get("/failedtransactions", auth, trackFailedTransaction);
+
+router.delete('/delete/:id', auth, DeleteTransactions)
 
 
 export default router

@@ -33,7 +33,6 @@ export const getUsersBalance = async(req:Request, res:Response) => {
                         message: "Please LOGIN to get your information"
                     })
                 }  
-    
         }catch(error){
             console.error(error)
             res.status(500).json({
@@ -75,7 +74,6 @@ export const getUsersInfo = async(req:Request, res:Response) => {
                     message: "Please LOGIN to get your information"
                 })
             }
-
     }catch(error){
         console.error(error)
         res.status(500).json({

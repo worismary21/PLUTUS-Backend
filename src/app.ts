@@ -8,6 +8,7 @@ import beneficiaryRoute from './routes/beneficiary.routes'
 import transferRoute from './routes/transfer.route'
 import companyRoute from './routes/company.route'
 import transaction from './routes/transfer.route';
+import transactionRoute from './routes/transaction.route'
 import cors from 'cors';
 import logger from "morgan"
 
@@ -25,7 +26,7 @@ app.use('/user', userRoute)
 app.use('/beneficiary', beneficiaryRoute)
 app.use('/transfer', transferRoute)
 app.use('/company', companyRoute)
-app.use('/transactions', transaction)
+app.use('/transactions', transactionRoute)
 
 
 app.get('/', (req, res) => {

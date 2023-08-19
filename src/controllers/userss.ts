@@ -148,3 +148,48 @@ export const trackFailedTransaction = async (
     console.log(error);
   }
 };
+
+export const DeleteTransactions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token: any = req.headers.authorization;
+    const token_info = token.split(" ")[1];
+    const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+
+    const getting_user_role: any = await User.findOne({
+      where: { id: decodedToken.id },
+    });
+    const user_role = getting_user_role.role;
+
+    const {id} = req.params
+
+    // const trans = await Transfers.findByPk(id)
+
+    if (user_role === "admin") {
+
+    const deletedTransaction = await Transfers.destroy({
+        where: {
+          id:id
+        }
+      });
+      if (!deletedTransaction) {
+        return res.status(404).json({
+          message: `There are no transfers with this senderId`,
+        });
+      } else {
+        return res.status(200).json({
+          message: `You have SUCCESSFULLY deleted this transaction.`
+        });
+      }
+    } else {
+      return res.status(400).json({
+        message: `You are not an admin`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
