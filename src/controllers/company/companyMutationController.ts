@@ -10,6 +10,7 @@ import dotenv from "dotenv";
 import { companyAccount } from "../../utils/auth";
 import Joi from "joi";
 import bcrypt from "bcrypt";
+import { createCompanySchema } from "../../utils/inputvalidation";
 
 dotenv.config();
 
@@ -21,19 +22,7 @@ export const createCompany = async (
     next: NextFunction
   ) => {
     try {
-      const schema = Joi.object({
-        companyName: Joi.string().required(),
-        company_description: Joi.string().required(),
-        email: Joi.string().email().required(),
-        password: Joi.string().required(),
-        businessType: Joi.string().required(),
-        roi: Joi.any().required(),
-        investment_category: Joi.string().required(),
-        investment_description: Joi.string().required(),
-        duration: Joi.string().required(),
-        min_investment_amount: Joi.number().required(),
-        max_investment_amount: Joi.number().required(),
-      });
+      const schema = createCompanySchema
       const { error, value } = schema.validate(req.body);
       if (error) {
         return res.status(400).json({ message: error.details[0].message });

@@ -136,7 +136,7 @@ export const verifyUser = async (
       });
     }
   } catch (error: any) {
-    console.error("Error verifyinguser:", error);
+    console.error("Error verifying user:", error);
     return res.status(500).json({
       Error: "Internal Server Error",
     });

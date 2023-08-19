@@ -32,6 +32,7 @@ export const transferToBeneficiary = async (
       payer_reference,
       information_for_beneficiary,
     } = req.body;
+
     const validated_Beneficiary: any = await User.findOne({
       where: { accountNumber },
     });
@@ -47,24 +48,9 @@ export const transferToBeneficiary = async (
         const sender_AccountBalance = sender_accountDetails.accountBalance;
         const sender_accountNumber = sender_accountDetails.accountNumber;
 
-        if (
-          +sender_accountNumber !== +beneficiary_AccountNumber &&
-          +beneficiary_AccountNumber === +accountNumber
-        ) {
+        if ( +sender_accountNumber !== +beneficiary_AccountNumber && +beneficiary_AccountNumber === +accountNumber) {
           if (sender_AccountBalance > amount) {
-            const sucessful_transfer = await Transfers.create({
-              id: v4(),
-              accountNumber,
-              amount,
-              transfer_purpose,
-              beneficiary_name,
-              beneficiary_email,
-              payer_reference,
-              information_for_beneficiary,
-              status: "SUCCESSFUL",
-              senderId: sender_id,
-            });
-            if (sucessful_transfer) {
+    
               const beneficiary_old_Account_Balance = validated_Beneficiary.accountBalance;
               const beneficiary_new_AccountBalance = amount + beneficiary_old_Account_Balance;
 
@@ -90,70 +76,84 @@ export const transferToBeneficiary = async (
               );
 
                 const beneficiary_AccNumber = beneficiary_AccountNumber;
+
                 const expected_beneficiary_balance: any = await User.findOne({
                   where: { accountNumber: beneficiary_AccNumber },
                 });
                 const expected_beneficiary_AccountBalance = expected_beneficiary_balance.accountBalance
 
-                if (
-                  beneficiary_new_AccountBalance !== expected_beneficiary_AccountBalance) {
-                  const pending_transfer = await Transfers.create({
-                    id: v4(),
-                    accountNumber,
-                    amount: beneficiary_old_Account_Balance + 0,
-                    transfer_purpose,
-                    beneficiary_name,
-                    beneficiary_email,
-                    payer_reference,
-                    information_for_beneficiary,
-                    status: "PENDING",
-                    senderId: sender_id,
-                  });
+                if (beneficiary_new_AccountBalance !== expected_beneficiary_AccountBalance) {
 
-                  return res.status(400).json({
-                    message: "Transaction PENDING",
-                  });
-                }
+                  const update_beneficiary_accountBalance = await User.update({ accountBalance: beneficiary_old_Account_Balance }, { where: {accountNumber: beneficiary_AccNumber}})
+                  const update_sender_accountBalance = await User.update({ accountBalance: sender_old_Account_Balance }, { where: {accountNumber: sender_accountNumber}})
 
-              if (fulfilled_transaction && user_Transaction_Status ) {
-                const sucessful_transfer = await Transfers.create({
-                  id: v4(),
-                  accountNumber,
-                  amount,
-                  transfer_purpose,
-                  beneficiary_name,
-                  beneficiary_email,
-                  payer_reference,
-                  information_for_beneficiary,
-                  status: "SUCCESSFUL",
-                  senderId: sender_id,
-                });
-                return res.status(200).json({
-                  message: "Transaction Successful",
-                });
-              } else {
-                const failed_transfer = await Transfers.create({
-                  id: v4(),
-                  accountNumber,
-                  amount,
-                  transfer_purpose,
-                  beneficiary_name,
-                  beneficiary_email,
-                  payer_reference,
-                  information_for_beneficiary,
-                  status: "FAILED",
-                  senderId: sender_id,
-                });
-                return res.status(400).json({
-                  message: "Transaction Failed",
-                });
-              }
-            }
+                  if(update_beneficiary_accountBalance && update_sender_accountBalance){
+                    const pending_transfer = await Transfers.create({
+                      id: v4(),
+                      accountNumber,
+                      amount,
+                      transfer_purpose,
+                      beneficiary_name,
+                      beneficiary_email,
+                      payer_reference,
+                      information_for_beneficiary,
+                      status: "PENDING",
+                      senderId: sender_id,
+                    });
+  
+                    return res.status(400).json({
+                      message: "Transaction PENDING. Please wait for few minutes before trying again.",
+                      data: pending_transfer 
+                    });
+                  }else{
+                    return res.status(400).json({
+                      message: `PENDING TRANSACTION. Please contact customer service or go to the nearest plutus branch.`
+                    })
+                  }
+                }else{
+                    if (fulfilled_transaction && user_Transaction_Status ){
+                      const sucessful_transfer = await Transfers.create({
+                        id: v4(),
+                        accountNumber,
+                        amount,
+                        transfer_purpose,
+                        beneficiary_name,
+                        beneficiary_email,
+                        payer_reference,
+                        information_for_beneficiary,
+                        status: "SUCCESSFUL",
+                        senderId: sender_id,
+                      });
+                      return res.status(200).json({
+                        message: "Transaction Successful",
+                        data: sucessful_transfer
+                      });
+                    } else {
+                      const failed_transfer = await Transfers.create({
+                        id: v4(),
+                        accountNumber,
+                        amount,
+                        transfer_purpose,
+                        beneficiary_name,
+                        beneficiary_email,
+                        payer_reference,
+                        information_for_beneficiary,
+                        status: "FAILED",
+                        senderId: sender_id,
+                      });
+                      return res.status(400).json({
+                        message: "Transaction Failed",
+                        data: failed_transfer
+                      });
+                    }
+                  }   
+                
           } else {
             return res.status(400).json({
               message: "Insufficient Funds",
             });
           }
+
         } else {
           return res.status(400).json({
             message: "Cannot make TRANSFER. Please check details properly.",
@@ -170,7 +170,10 @@ export const transferToBeneficiary = async (
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error Transferring to user:", error);
+    return res.status(500).json({
+      Error: "Internal Server Error",
+    });
   }
 };
 
@@ -214,7 +217,7 @@ export const transferToSavingsWallet = async (
      const user_new_balance = user_accountBalance - amount
 
       const updating_user_balance = await User.update(
-        { accountBalance:user_new_balance  },
+        { accountBalance: user_new_balance },
         {
           where: {
             id: user_id
@@ -228,7 +231,7 @@ export const transferToSavingsWallet = async (
         })
       }else{
         return res.status(400).json({
-          message: "Transfer pending"
+          message: "Transfer PENDING!! Please wait a few minutes or contact customer service. "
         })
       }
 

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import User, { IUSER } from "../../model/user";
 import { v4 } from "uuid";
-import { hashedPassword, tokenGenerator, verifyToken } from "../../utils/auth";
+import { hashedPassword, tokenGenerator } from "../../utils/auth";
 import { generateOTP } from "../../utils/auth";
 import { sendmail, emailHtmlForAdmin } from "../../utils/notifications";
 import { createAdminSchema } from "../../utils/inputvalidation";
