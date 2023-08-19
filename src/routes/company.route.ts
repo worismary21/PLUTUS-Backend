@@ -1,6 +1,6 @@
 import express from 'express';
-import { createCompany, deleteCompany, getAllCompanies } from "../controllers/company/companyQueryController";
-import { loginCompany } from "../controllers/company/companyQueryController";
+import { getAllCompanies } from "../controllers/company/companyQueryController";
+import { loginCompany, createCompany, deleteCompany } from "../controllers/company/companyMutationController";
 import { auth } from '../middleware/auth';
 import { isAdmin } from '../utils/auth';
 
