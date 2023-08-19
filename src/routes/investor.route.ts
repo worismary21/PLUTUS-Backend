@@ -1,7 +1,7 @@
 // import {createInvestor} from '../controllers/investorController'
 import { Router} from 'express';
 import { companyAuth } from '../middleware/auth';
-import { getInvestor } from '../controllers/investorController';
+import { getInvestor } from '../controllers/investorQueryController';
 
 const router = Router();
 

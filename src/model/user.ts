@@ -23,12 +23,12 @@ export type IUSER = {
     accountBalance:number,
     role: string,
     verify: boolean,
-    phoneNumber:string,
-    address:string,
-    zipCode:string,
-    city:string,
-    state:string,
-    country:string
+    phoneNumber: string, 
+    address: string, 
+    zipCode: string, 
+    city: string, 
+    state: string, 
+    country: string
 }
 
 class User extends Model<IUSER>{}
@@ -91,38 +91,36 @@ User.init({
         type:DataTypes.BOOLEAN,
         allowNull:true
     },
-    phoneNumber: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-    address: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-    zipCode: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-    city: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-    state: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-    country: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
+    phoneNumber:{
+        type:DataTypes.STRING,
+        allowNull:true
+    },
+    address:{
+        type:DataTypes.STRING,
+        allowNull:true
+    },
+    zipCode:{
+        type:DataTypes.STRING,
+        allowNull:true
+    },
+    city:{
+        type:DataTypes.STRING,
+        allowNull:true
+    },
+    state:{
+        type:DataTypes.STRING,
+        allowNull:true
+    },
+    country:{
+        type:DataTypes.STRING,
+        allowNull:true
+    },
+    
 }, {
     sequelize:db,
     tableName:"User",
     modelName:"User"
 })
 
-
-
-
-
 export default User
+

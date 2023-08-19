@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import User from "../model/user";
+import User from "../../model/user";
 import { transferableAbortSignal } from "util";
-import Transfers from "../model/transfer";
-import bodyParser from 'body-parser';
+import Transfers from "../../model/transfer";
+import { getPagination } from "../../utils/pagination";
+import Investor, {INVESTOR} from "../../model/investor";
 
-// dotenv.config();
+dotenv.config();
 
 export const getUsersByAdmin = async (req: Request, res: Response) => {
   try {
@@ -150,62 +151,133 @@ export const trackFailedTransaction = async (
   }
 };
 
-export const deleteUserByAdmin = async (req: Request,
+export const getAllUsersByAdmin = async (
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const userId = req.params.id;
-  console.log( "user",userId)
-  
-  try{
-    const result = await User.findOne({where: {id: userId }});
-    console.log( "results" ,result)
-    if (!result) 
-      return res
-      .status(404)
-      .json({ message: 'user with id ${req.params.id} not found'});
-     await User.destroy({ where: {id: userId}});
-    return res.status(200).json({ message: 'user deleted successfully'})
-  } catch (err:any){
-     console.log(err.message);
-     return res.status(500).json ({message: 'Internal Server Error'});
+  try {
+    let page = 1;
+    if (req.query.page) {
+      page = parseInt(req.query.page as string);
+      if (Number.isNaN(page)) {
+        return res.status(400).json({
+          message: "Invalid page number",
+        });
+      }
+    }
+
+    const pageSize = 10;
+    const offset = (page - 1) * pageSize;
+
+    const getUsersAdmin = await User.findAll();
+    const totalPages = Math.ceil(getUsersAdmin.length / pageSize);
+
+    if (page > totalPages) {
+      page = totalPages;
+    }
+    const allUsers = getUsersAdmin.slice(offset, page * pageSize);
+
+    return res.status(200).json({
+      allUsers,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (err) {
+    console.error("Error executing getUsers:", err);
+    return res.status(500).json({
+      Error: "Internal Server Error",
+    });
   }
+};
+
+export const getAllTransactions = async (
+  req: Request,
+  res: Response,
+  NextFunction: NextFunction
+) => {
+  try {
+    const token: any = req.headers.authorization;
+    const token_info = token.split(" ")[1];
+    const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+
+    const user_Id = decodedToken.id;
+
+    if (user_Id) {
+      if (user_Id) {
+        const user_Details: any = await User.findOne({
+          where: { id: user_Id },
+        });
+
+        const transfer_Details: any = await Transfers.findAll({
+          where: { senderId: user_Id },
+        });
+
+        const userAccountNumber = user_Details.accountNumber;
+        const senderId = user_Id;
+
+        if (userAccountNumber && senderId) {
+          const page = Number(req.query.page) || 1;
+          const limit = Number(req.query.limit) || 10;
+
+          const { offset, limit: paginationLimit } = getPagination({
+            page,
+            limit,
+          });
+
+          const getAllTransactions: any = await Transfers.findAndCountAll({
+            where: { senderId: senderId },
+            offset,
+            limit: paginationLimit,
+          });
+
+          if (getAllTransactions) {
+            return res.status(200).json({
+              message: `User's transactions`,
+              transactions: getAllTransactions.rows,
+              totalCount: getAllTransactions.count,
+              currentPage: page,
+              totalPages: Math.ceil(getAllTransactions.count / limit),
+            });
+          }
+        } else {
+          return res.status(400).json({ message: "No such user present" });
+        }
+      } else {
+        return res
+          .status(400)
+          .json({ message: "Login to get users transactions" });
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "An error occurred" });
   }
- 
- 
-  export const getAllUsersByAdmin = async (req: Request, res: Response, next: NextFunction) =>{ 
-              try {
-                let page = 1;
-                if (req.query.page) {
-                  page = parseInt(req.query.page as string);
-                  if (Number.isNaN(page)) {
-                    return res.status(400).json({
-                      message: "Invalid page number",
-                    });
-                  }
-                }  
-            
-                const pageSize = 10;
-                const offset = (page - 1) * pageSize;
-            
-                const getUsersAdmin = await User.findAll();
-                const totalPages = Math.ceil(getUsersAdmin.length / pageSize);
-            
-                if (page > totalPages) {
-                  page = totalPages;
-                }
-                const allUsers = getUsersAdmin.slice(offset, page * pageSize);
-            
-                return res.status(200).json({
-                  allUsers,
-                  currentPage: page,
-                  totalPages,
-                });
-              } catch (err) {
-                console.error("Error executing getUsers:", err);
-                return res.status(500).json({
-                  Error: "Internal Server Error",
-                });
-              }
-            } 
-  
+};
+
+export const getInvestor = async (req: Request, res: Response) => {
+  try {
+   const token: any = req.headers.authorization;
+   const token_info = token.split(" ")[1];
+   const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+
+   
+   const companyId = decodedToken.id;
+
+    const investor = await Investor.findAll({ where: { id : companyId } });
+    if(investor){
+      
+      return  res.status(200).json({
+          message:"Fetching Investor Successfully",
+          data: investor
+      })
+      }else{
+          res.status(400).json({
+          message: "Error Fetching Investor"
+          }); 
+      }
+   
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};

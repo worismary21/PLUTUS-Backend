@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBeneficiaries, deleteBeneficiary, getBeneficiaries } from "../controllers/beneficiary";
+import { createBeneficiaries, deleteBeneficiary, getBeneficiaries } from "../controllers/beneficiary/beneficiaryQueryController";
 import { auth } from '../middleware/auth';
 
 const router = express.Router();

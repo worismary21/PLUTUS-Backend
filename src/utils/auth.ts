@@ -4,7 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import otpGenerator from "otp-generator";
 import { OTP_LENGTH, OTP_CONFIG } from "./notifications";
 import dotenv  from "dotenv";
-import User, { IUSER } from "../../model/user";
+import User, { IUSER } from "../model/user";
 dotenv.config()
 
 

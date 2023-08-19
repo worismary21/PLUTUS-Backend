@@ -1,8 +1,8 @@
 import express from 'express';
-import { createCompany, deleteCompany, getAllCompanies } from "../controllers/companyController";
-import { loginCompany } from "../controllers/companyController";
+import { createCompany, deleteCompany, getAllCompanies } from "../controllers/company/companyQueryController";
+import { loginCompany } from "../controllers/company/companyQueryController";
 import { auth } from '../middleware/auth';
-import { isAdmin } from '../controllers/utils/auth';
+import { isAdmin } from '../utils/auth';
 
 const router = express.Router();
 

@@ -1,13 +1,13 @@
 import express, { Request, Response, NextFunction } from "express";
-import User from "../model/user";
-import Transfers, { TRANSFER } from "../model/transfer";
+import User from "../../model/user";
+import Transfers, { TRANSFER } from "../../model/transfer";
 import { v4 } from "uuid";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 
-import Company from "../model/company";
-import investment_Records from '../model/investmentRecord'
-import Investor from "../model/investor";
+import Company from "../../model/company";
+import investment_Records from '../../model/investmentRecord'
+import Investor from "../../model/investor";
 
 
 dotenv.config();
@@ -100,7 +100,7 @@ export const transferToBeneficiary = async (
                   const pending_transfer = await Transfers.create({
                     id: v4(),
                     accountNumber,
-                    amount,
+                    amount: beneficiary_old_Account_Balance + 0,
                     transfer_purpose,
                     beneficiary_name,
                     beneficiary_email,
