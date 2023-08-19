@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import User from "../model/user";
+import User from "../../model/user";
 import { transferableAbortSignal } from "util";
-import Transfers from "../model/transfer";
+import Transfers from "../../model/transfer";
+import { getPagination } from "../../utils/pagination";
+import Investor, {INVESTOR} from "../../model/investor";
 
 dotenv.config();
 
@@ -149,47 +151,133 @@ export const trackFailedTransaction = async (
   }
 };
 
-export const DeleteTransactions = async (
+export const getAllUsersByAdmin = async (
   req: Request,
   res: Response,
   next: NextFunction
+) => {
+  try {
+    let page = 1;
+    if (req.query.page) {
+      page = parseInt(req.query.page as string);
+      if (Number.isNaN(page)) {
+        return res.status(400).json({
+          message: "Invalid page number",
+        });
+      }
+    }
+
+    const pageSize = 10;
+    const offset = (page - 1) * pageSize;
+
+    const getUsersAdmin = await User.findAll();
+    const totalPages = Math.ceil(getUsersAdmin.length / pageSize);
+
+    if (page > totalPages) {
+      page = totalPages;
+    }
+    const allUsers = getUsersAdmin.slice(offset, page * pageSize);
+
+    return res.status(200).json({
+      allUsers,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (err) {
+    console.error("Error executing getUsers:", err);
+    return res.status(500).json({
+      Error: "Internal Server Error",
+    });
+  }
+};
+
+export const getAllTransactions = async (
+  req: Request,
+  res: Response,
+  NextFunction: NextFunction
 ) => {
   try {
     const token: any = req.headers.authorization;
     const token_info = token.split(" ")[1];
     const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
 
-    const getting_user_role: any = await User.findOne({
-      where: { id: decodedToken.id },
-    });
-    const user_role = getting_user_role.role;
+    const user_Id = decodedToken.id;
 
-    const {id} = req.params
+    if (user_Id) {
+      if (user_Id) {
+        const user_Details: any = await User.findOne({
+          where: { id: user_Id },
+        });
 
-    // const trans = await Transfers.findByPk(id)
+        const transfer_Details: any = await Transfers.findAll({
+          where: { senderId: user_Id },
+        });
 
-    if (user_role === "admin") {
+        const userAccountNumber = user_Details.accountNumber;
+        const senderId = user_Id;
 
-    const deletedTransaction = await Transfers.destroy({
-        where: {
-          id:id
+        if (userAccountNumber && senderId) {
+          const page = Number(req.query.page) || 1;
+          const limit = Number(req.query.limit) || 10;
+
+          const { offset, limit: paginationLimit } = getPagination({
+            page,
+            limit,
+          });
+
+          const getAllTransactions: any = await Transfers.findAndCountAll({
+            where: { senderId: senderId },
+            offset,
+            limit: paginationLimit,
+          });
+
+          if (getAllTransactions) {
+            return res.status(200).json({
+              message: `User's transactions`,
+              transactions: getAllTransactions.rows,
+              totalCount: getAllTransactions.count,
+              currentPage: page,
+              totalPages: Math.ceil(getAllTransactions.count / limit),
+            });
+          }
+        } else {
+          return res.status(400).json({ message: "No such user present" });
         }
-      });
-      if (!deletedTransaction) {
-        return res.status(404).json({
-          message: `There are no transfers with this senderId`,
-        });
       } else {
-        return res.status(200).json({
-          message: `You have SUCCESSFULLY deleted this transaction.`
-        });
+        return res
+          .status(400)
+          .json({ message: "Login to get users transactions" });
       }
-    } else {
-      return res.status(400).json({
-        message: `You are not an admin`,
-      });
     }
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ message: "An error occurred" });
+  }
+};
+
+export const getInvestor = async (req: Request, res: Response) => {
+  try {
+   const token: any = req.headers.authorization;
+   const token_info = token.split(" ")[1];
+   const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+
+   
+   const companyId = decodedToken.id;
+
+    const investor = await Investor.findAll({ where: { id : companyId } });
+    if(investor){
+      
+      return  res.status(200).json({
+          message:"Fetching Investor Successfully",
+          data: investor
+      })
+      }else{
+          res.status(400).json({
+          message: "Error Fetching Investor"
+          }); 
+      }
+   
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };

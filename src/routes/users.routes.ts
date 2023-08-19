@@ -1,11 +1,13 @@
-import {userSignup, loginUser, createAdmin, verifyChangePasswordEmail, verifyChangePasswordOTP, verifyChangePassword, resendOTP, updateUserProfile, createUserImage} from '../controllers/controller'
+import {userSignup, loginUser, createAdmin, verifyChangePasswordEmail, verifyChangePasswordOTP, verifyChangePassword, resendOTP, updateUserProfile, createUserImage} from '../controllers/client/clientMutationController'
 import { Router} from 'express';
 import {db} from '../config/index'
 import { auth } from '../middleware/auth';
-import { createCompany } from '../controllers/companyController';
-import { isAdmin } from '../controllers/utils/auth';
-import { getUsersByAdmin } from "../controllers/userss";
-import { getUsersBalance, getUsersInfo } from "../controllers/user2";
+import { createCompany } from '../controllers/company/companyQueryController';
+import { isAdmin } from '../utils/auth';
+import { getUsersByAdmin } from "../controllers/admin/adminQueryController";
+import { getAllUsersByAdmin } from '../controllers/admin/adminQueryController';
+import { deleteUserByAdmin} from '../controllers/admin/adminQueryController';
+import { getUsersBalance, getUsersInfo } from "../controllers/client/clientQueryController";
 import { upload } from '../middleware/uploadImage';
 
 const router = Router();
@@ -24,8 +26,11 @@ router.put('/updateaccount', updateUserProfile);
 router.put('/profileimage', upload.single('image'), createUserImage)
 router.post("/company", isAdmin, createCompany);
 router.get("/get", getUsersByAdmin);
+router.get("/getAllUsersByAdmin", isAdmin, getAllUsersByAdmin)
+router.delete("/deleteUser/:id",isAdmin, deleteUserByAdmin)
 
 router.get("/balance", auth, getUsersBalance);
+
 router.get("/info", auth, getUsersInfo);
 
 export default router;
