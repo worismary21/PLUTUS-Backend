@@ -352,9 +352,8 @@ export const transferToInvestmentCompany = async (
 
               const investment_duration = company_dets.duration
               const company_roi = company_dets.roi
-              const expected_return_amount = amount * company_roi
-              const expected_monthly_return = expected_return_amount/investment_duration
-              
+              const expected_return_amount:any = (amount * company_roi).toFixed(2)
+              const expected_monthly_return:any = (expected_return_amount/investment_duration).toFixed(2)
 
              await Investor.create({
                 id:v4(),

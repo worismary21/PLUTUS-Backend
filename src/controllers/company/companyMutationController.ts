@@ -14,7 +14,6 @@ import { createCompanySchema } from "../../utils/inputvalidation";
 
 dotenv.config();
 
-
 //Controller For Creating Company
 export const createCompany = async (
     req: Request,
@@ -37,7 +36,7 @@ export const createCompany = async (
         where: { id: userId}
       }) 
       const user_role = user_details.role
-  
+      
       if (decodedToken) {
         const {
           companyName,
@@ -126,7 +125,6 @@ export const createCompany = async (
   };
   
   //Controller for Company Login
-  
   export const loginCompany = async (
     req: Request,
     res: Response,

@@ -383,49 +383,49 @@ export const updateUserProfile = async (
   next: NextFunction
 ) => {
   try {
-    //   let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
-    //     console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
-    //   const updateField: Partial<IUSER> = {}
-    //   if(!firstName){
-    //       updateField.firstName = firstName
-    //   }
-    //   if(!lastName){
-    //       updateField.lastName = lastName
-    //   }
-    //   if(!email){
-    //       updateField. email =  email
-    //   }
-    //   if(!phoneNumber){
-    //       updateField. phoneNumber =  phoneNumber
-    //   }
-    //   // if(!imageUrl){
-    //   //     updateField.imageUrl =  req.file
-    //   // }
-    //   if(!address){
-    //       updateField. address =  address
-    //   }
-    //   if(!zipCode){
-    //       updateField. zipCode =  zipCode
-    //   }
-    //   if(!city){
-    //       updateField. city =  city
-    //   }
-    //   if(!state){
-    //       updateField. state =  state
-    //   }
-    //   if(!country){
-    //       updateField. country =  country
-    //   }
-    //   const updatedUser = await User.update(updateField,  {where: {email: email }} ) as unknown as IUSER
-    //      if (updatedUser) {
-    //         return res.status(200).json({
-    //            message: `User updated successfully`,
-    //            data: updatedUser
-    //         });
-    //      }
-    //      return res.status(401).json({
-    //         message: `Update operation failed`
-    //      });
+      let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
+        // console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
+      const updateField: Partial<IUSER> = {}
+      if(!firstName){
+          updateField.firstName = firstName
+      }
+      if(!lastName){
+          updateField.lastName = lastName
+      }
+      if(!email){
+          updateField. email =  email
+      }
+      if(!phoneNumber){
+          updateField. phoneNumber =  phoneNumber
+      }
+      // if(!imageUrl){
+      //     updateField.imageUrl =  req.file
+      // }
+      if(!address){
+          updateField. address =  address
+      }
+      if(!zipCode){
+          updateField. zipCode =  zipCode
+      }
+      if(!city){
+          updateField. city =  city
+      }
+      if(!state){
+          updateField. state =  state
+      }
+      if(!country){
+          updateField. country =  country
+      }
+      const updatedUser = await User.update(updateField,  {where: {email: email }} ) as unknown as IUSER
+         if (updatedUser) {
+            return res.status(200).json({
+               message: `User updated successfully`,
+               data: updatedUser
+            });
+         }
+         return res.status(401).json({
+            message: `Update operation failed`
+         });
   } catch (error: any) {
     console.log(error.message);
     return res.status(500).json({ message: "Internal server error" });
