@@ -84,6 +84,8 @@ export const userSignup = async (
       message: `User created successfully`,
       newUser,
       token,
+      email: user.email,
+      role: user.role,
     });
   } catch (error) {
     console.error("Error creating user:", error);
@@ -192,6 +194,7 @@ export const loginUser = async (
     }
 
     const { email, password } = req.body;
+
     const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
 
     if (!user) {
@@ -226,9 +229,9 @@ export const loginUser = async (
       }
     }
 
-    return res.status(400).json({
-      message: `User Not Verified`,
-    });
+    // return res.status(401).json({
+    //   message: `User Not Verified`,
+    // });
   } catch (err) {
     return res.status(500).json({
       message: `Internal Server Error`,

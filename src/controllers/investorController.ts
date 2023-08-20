@@ -46,12 +46,14 @@ export const getInvestment = async (req: Request, res: Response) => {
     const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
 
     const email = decodedToken.email;
-    console.log("EMAIL", email);
+    // console.log("EMAIL", email);
 
     const investment = await Investor.findAll({
       where: { email: email },
     });
-    console.log("INVESTOR", investment);
+    // console.log("INVESTOR", investment);
+    const allInvestment = await Investor.findAll();
+    console.log(allInvestment);
 
     if (investment) {
       const totalInvestedCapital = await Investor.sum("investedCapital", {

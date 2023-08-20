@@ -3,6 +3,7 @@ import Transfers from "../model/transfer";
 import User from "../model/user";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { getPagination } from "./utils/pagination";
 
 dotenv.config();
 
@@ -118,7 +119,7 @@ export const getAllIncome = async (
 export const getAllTransactions = async (
   req: Request,
   res: Response,
-  NextFunction: NextFunction
+  next: NextFunction
 ) => {
   try {
     const token: any = req.headers.authorization;
@@ -128,39 +129,48 @@ export const getAllTransactions = async (
     const user_Id = decodedToken.id;
 
     if (user_Id) {
-      const user_Details: any = await User.findOne({
-        where: { id: user_Id },
-      });
+      const user_Details: any = await User.findOne({ where: { id: user_Id } });
 
-      const transfer_Details: any = await Transfers.findOne({
-        where: { id: user_Id },
+      const transfer_Details: any = await Transfers.findAll({
+        where: { senderId: user_Id },
       });
 
       const userAccountNumber = user_Details.accountNumber;
-      const senderId = transfer_Details.senderId;
+      const senderId = user_Id;
 
       if (userAccountNumber && senderId) {
-        const getAllTransactions: any = await Transfers.findAll({
-          where: { accountNumber: userAccountNumber, senderId: senderId },
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+
+        const { offset, limit: paginationLimit } = getPagination({
+          page,
+          limit,
+        });
+
+        const getAllTransactions: any = await Transfers.findAndCountAll({
+          where: { senderId: senderId },
+          offset,
+          limit: paginationLimit,
         });
 
         if (getAllTransactions) {
           return res.status(200).json({
-            message: "User's transactions",
-            getAllTransactions,
+            message: `User's transactions`,
+            transactions: getAllTransactions.rows,
+            totalCount: getAllTransactions.count,
+            currentPage: page,
+            totalPages: Math.ceil(getAllTransactions.count / limit),
           });
         }
       } else {
-        return res.status(400).json({
-          message: "No such user present",
-        });
+        return res.status(400).json({ message: "No such user present" });
       }
     } else {
-      return res.status(400).json({
-        message: "Log in to get users transactions",
-      });
+      return res
+        .status(400)
+        .json({ message: "Login to get users transactions" });
     }
   } catch (error) {
-    console.error(error);
+    return res.status(500).json({ message: "An error occurred" });
   }
 };

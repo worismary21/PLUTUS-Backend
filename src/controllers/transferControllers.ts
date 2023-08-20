@@ -279,6 +279,8 @@ export const transferToInvestmentCompany = async (
           where: { accountNumber: company_account_number },
         });
 
+        const company_rateOfReturn = company_details.roi;
+        const company_name = company_details.companyName;
         const company_id = company_details.id;
         const company_account_balance = company_details.wallet;
         const comapany_wallet_balance = amount + company_account_balance;
@@ -313,6 +315,8 @@ export const transferToInvestmentCompany = async (
             monthlyReturn: (amount * company_details.roi) / 4,
             active: true,
             companyId: company_id,
+            companyName: company_name,
+            rateOfReturn: company_rateOfReturn,
           });
 
           return res.status(200).json({
