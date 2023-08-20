@@ -19,7 +19,7 @@ export type ICOMPANY = {
   noOfInvestors: number;
   investment_category: string;
   investment_description: string;
-  duration: string;
+  duration: number;
   min_investment_amount: string;
   max_investment_amount: string;
 };
@@ -101,7 +101,7 @@ Company.init(
       allowNull: false,
     },
     duration: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     min_investment_amount: {

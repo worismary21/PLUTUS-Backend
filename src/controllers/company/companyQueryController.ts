@@ -2,6 +2,8 @@ import express, { Request, Response, NextFunction } from "express";
 import Company, { ICOMPANY } from "../../model/company";
 import dotenv from "dotenv";
 import { getPagination } from "../../utils/pagination";
+import Investor from "../../model/investor";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -29,5 +31,34 @@ export const getAllCompanies = async (
     });
   } catch (error) {
     return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+export const getInvestor = async (req: Request, res: Response) => {
+  try {
+   const token: any = req.headers.authorization;
+   const token_info = token.split(" ")[1];
+   const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+
+   
+   const companyId = decodedToken.id;
+
+    const investor = await Investor.findAll({ where: { id : companyId } });
+    if(investor){
+      
+      return  res.status(200).json({
+          message:"Fetching Investor Successfully",
+          data: investor
+      })
+      }else{
+          res.status(400).json({
+          message: "Error Fetching Investor"
+          }); 
+      }
+   
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };

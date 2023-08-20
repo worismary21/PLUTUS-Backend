@@ -44,8 +44,6 @@ export const verifyToken = (token:any)=>{
 
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) =>{
   const token = req.headers.authorization?.split(' ')[1];
-  console.log(token)
-
     if (!token) {
       throw new Error('No token provided');
     }
@@ -55,7 +53,9 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction) =
 
 
   if(user.role !== 'admin'){
-      throw new Error('You are not admin')
+      return res.status(400).json({
+        message: `You are not an admin user`
+      })
   }else{
       next();
   }

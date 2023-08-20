@@ -56,13 +56,13 @@ export const emailHtmlForAdmin = (email:string, OTP:string)=>{
 
 export const emailHtmlForCompany = (companyName:string, email:string, password:string,)=>{
     const mail = `<h1>Welcome to Plutus<h1>
-                    <p>Hello, ${companyName}</p><br>
+                    <p>Hello ${companyName},</p><br>
                     <p> Thank you for registering your company with Plutus. Here you have access to attract a lot of investors to your company and scale your business so high.</p>
                     <p>Please use the details below to log into your account.</p><br>
                     <p>email: ${email}</p><br>
                     <p>password: ${password}</p><br>
                     <p>Don't hesistate in reaching out via our customer service mail to resolve any issues or concerns regarding your account.</p><br>
-                    <p>Thank You</p>
+                    <p>Thank You</p><br>
                     <p>Best Regards,</p>
                     <p>From </P>
                     <P>Team Plutus</p>`
