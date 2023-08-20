@@ -31,4 +31,19 @@ export const signUpUser = Joi.object({
     max_investment_amount: Joi.number().required(),
   });
 
+export const clientLogin = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+});
+
+export const companyLogin = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+});
+
+export const createBeneficiary = Joi.object({
+  beneficiaryName: Joi.string().required(),
+  accountNumber: Joi.string().required()
+})
+
 

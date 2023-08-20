@@ -38,7 +38,7 @@ export const sendmail = async(from:string, to:string, subject:string, html:strin
 
 export const emailHtml = (email:string, OTP:string)=>{
     const mail = `<h1>Welcome to Plutus<h1>
-                    <p>You username: ${email}</p><br>
+                    <p>Your username: ${email}</p><br>
                     <p>Your OTP: ${OTP}</p><br>
                     <p>Thank You</p>`
 
@@ -48,7 +48,7 @@ export const emailHtml = (email:string, OTP:string)=>{
 export const emailHtmlForAdmin = (email:string, OTP:string)=>{
     const mail = `<h3>Dear Admin User,<h3><br>
                     <p>Please use these details too verify your account.</p>
-                    <p>You username: ${email}</p><br>
+                    <p>Your username: ${email}</p><br>
                     <p>Your OTP: ${OTP}</p><br>
                     <p>Thank You</p>`
                     return mail

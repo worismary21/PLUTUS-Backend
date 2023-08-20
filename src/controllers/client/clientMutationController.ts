@@ -9,7 +9,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import Joi from "joi";
 import bcrypt from "bcrypt";
-import { signUpUser } from '../../utils/inputvalidation'
+import { signUpUser, clientLogin } from '../../utils/inputvalidation'
 
 dotenv.config();
 
@@ -151,10 +151,7 @@ export const loginUser = async (
   next: NextFunction
 ) => {
   try {
-    const schema = Joi.object({
-      email: Joi.string().email().required(),
-      password: Joi.string().required(),
-    });
+    const schema = clientLogin
     const { error, value } = schema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
