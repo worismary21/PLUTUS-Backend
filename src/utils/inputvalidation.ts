@@ -26,7 +26,7 @@ export const signUpUser = Joi.object({
     roi: Joi.any().required(),
     investment_category: Joi.string().required(),
     investment_description: Joi.string().required(),
-    duration: Joi.string().required(),
+    duration: Joi.number().required(),
     min_investment_amount: Joi.number().required(),
     max_investment_amount: Joi.number().required(),
   });

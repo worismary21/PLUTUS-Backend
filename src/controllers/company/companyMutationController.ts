@@ -31,10 +31,14 @@ export const createCompany = async (
       const token: any = req.headers.authorization;
       const token_info = token.split(" ")[1];
       const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+
+      const userId = decodedToken.id
+      const user_details:any = await User.findOne({
+        where: { id: userId}
+      }) 
+      const user_role = user_details.role
   
       if (decodedToken) {
-        const user_role = decodedToken.role;
-  
         const {
           companyName,
           company_description,
@@ -58,7 +62,7 @@ export const createCompany = async (
             message: `${companyName} has already been registered.`,
           });
         } else {
-          if (user_role === "admin") {
+          if (user_role=== "admin") {
             const OTP = generateOTP();
   
             const company_account_number: string = companyAccount();

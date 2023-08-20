@@ -36,11 +36,11 @@ app.get('/', (req, res) => {
     }
 )
 
-db.sync({}).then(() => {
-    console.log('Database is connected');
-    }).catch((err:HttpError) => {
-    console.log(err);
-});
+// db.sync({force:true}).then(() => {
+//     console.log('Database is connected');
+//     }).catch((err:HttpError) => {
+//     console.log(err);
+// });
 
 // {force:true}
 

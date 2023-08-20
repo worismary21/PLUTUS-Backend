@@ -26,9 +26,9 @@ export const userSignup = async (
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    const { firstName, lastName, email, password, phoneNumber } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
-    const existingUser = await User.findOne({ where: { email: email, password:password } });
+    const existingUser = await User.findOne({ where: { email: email } });
     if (existingUser) {
       return res.status(400).json({ message: "Account already exists. Kindly login." });
     } else {
@@ -51,7 +51,7 @@ export const userSignup = async (
         accountBalance: 10000,
         role: "user",
         verify: false,
-        phoneNumber,
+        phoneNumber: "",
         address: "",
         zipCode: "",
         city: "",
@@ -142,6 +142,7 @@ export const verifyUser = async (
     });
   }
 };
+
 
 //Controller for logging-in user
 export const loginUser = async (

@@ -2,8 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import User, { IUSER } from "../../model/user";
 import { v4 } from "uuid";
 import { hashedPassword, tokenGenerator } from "../../utils/auth";
-import { generateOTP } from "../../utils/auth";
-import { sendmail, emailHtmlForAdmin } from "../../utils/notifications";
 import { createAdminSchema } from "../../utils/inputvalidation";
 
 export const createAdmin = async (
@@ -26,9 +24,8 @@ export const createAdmin = async (
       return res.status(400).json({ error: "Email already exists" });
     } else {
       const hashPassword: string = await hashedPassword(password);
-      const OTP = generateOTP();
 
-      const createAdmin = (await User.create({
+      const createAdmin = await User.create({
         id: v4(),
         firstName,
         lastName,
@@ -36,7 +33,7 @@ export const createAdmin = async (
         password: hashPassword,
         accountNumber: "No Account Number",
         savingsWallet: { id: v4(), amount: 0 },
-        otp: OTP,
+        otp: "",
         token: "",
         imageUrl: "",
         notification: "",
@@ -49,17 +46,9 @@ export const createAdmin = async (
         city: "",
         state: "",
         country: "",
-      })) as unknown as IUSER;
+      }) as unknown as IUSER;
 
-      const html = emailHtmlForAdmin(email, OTP);
-      const sent_mail = await sendmail(
-        `${process.env.DEV_GMAIL_USER}`,
-        email,
-        "Welcome",
-        html
-      );
-
-      const admin_details: any = User.findOne({ where: { email } });
+      const admin_details: any = await User.findOne({ where: { email } });
 
       if (admin_details.email) {
         const token = tokenGenerator({
@@ -70,7 +59,6 @@ export const createAdmin = async (
         return res.status(200).json({
           message: `User created successfully`,
           data: createAdmin,
-          admin_token: token,
         });
       } else {
         return res.status(400).json({
@@ -106,3 +94,9 @@ export const deleteUserByAdmin = async (
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+
+
+
+

@@ -11,5 +11,4 @@ router.delete('/delete/:id', isAdmin, deleteCompany)
 router.get('/get-companies', isAdmin, getAllCompanies)
 router.post('/login', loginCompany);
 
-
 export default router

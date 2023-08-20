@@ -279,63 +279,129 @@ export const transferToInvestmentCompany = async (
         );
 
         const company_details:any = await Company.findOne({where: { accountNumber: company_account_number }})
- 
-        const company_id = company_details.id
-        const company_account_balance = company_details.wallet
-        const comapany_wallet_balance = amount + company_account_balance
+        if(company_details.accountNumber){
 
-        const successful_Transfer = await Company.update(
-          { wallet: comapany_wallet_balance },
-          {
-            where: {
-              accountNumber: company_account_number,
-            },
+          const company_id = company_details.id
+          const company_account_balance = company_details.wallet
+          const comapany_wallet_balance = amount + company_account_balance
+  
+          const successful_Transfer = await Company.update(
+            { wallet: comapany_wallet_balance },
+            {
+              where: {
+                accountNumber: company_account_number,
+              },
+            }
+          );
+          
+          const company_dets: any = await Company.findOne({
+            where: { accountNumber: company_account_number },
+          });
+  
+          const current_wallet_balance = company_dets.wallet
+          const expected_company_balance = comapany_wallet_balance
+  
+          if( current_wallet_balance !== expected_company_balance ){
+
+            const update_company_balance = await Company.update(
+              { wallet: company_account_balance },
+              {
+                where: {
+                  accountNumber: company_account_number,
+                },
+              }
+            );
+
+            const update_user_balance = await User.update(
+              { accountBalance: user_account_balance },
+              {
+                where: {
+                  accountNumber: user_account_number,
+                },
+              }
+            );
+
+            if(update_company_balance && update_user_balance){
+              const pending_transaction_record = await investment_Records.create({
+                id: v4(),
+                amount: amount,
+                investor_name: user_firstName + " " + user_lastName,
+                investor_id: user_id,
+                investment_company_id: company_id,
+                transaction_status: "PENDING"
+              })
+              return res.status(400).json({
+                message: `Transfer PENDING.`,
+                data: pending_transaction_record 
+              })
+            }else{
+              return res.status(400).json({
+                message: `Please wait and try for a few minutes before trying again or contact Customer Service.`
+              })
+            }
+          }else{
+            if( investment_Transfer && successful_Transfer){
+              const sucessful_transaction_record = await investment_Records.create({
+                id: v4(),
+                amount: amount,
+                investor_name: user_firstName + " " + user_lastName,
+                investor_id: user_id,
+                investment_company_id: company_id,
+                transaction_status: "SUCCESSFUL",
+              })
+
+              const investment_duration = company_dets.duration
+              const company_roi = company_dets.roi
+              const expected_return_amount = amount * company_roi
+              const expected_monthly_return = expected_return_amount/investment_duration
+              
+
+             await Investor.create({
+                id:v4(),
+                firstName:user_details.firstName,
+                lastName:user_details.lastName,
+                accountNumber:user_details.accountNumber,
+                email:user_details.email,
+                investedCapital:amount,
+                expectedReturn:expected_return_amount,
+                monthlyReturn:expected_monthly_return,
+                active: true,
+                companyId:company_id
+              })
+
+                const investor_count = company_dets.noOfInvestors + 1
+                     await Company.update(
+                  { noOfInvestors: investor_count },
+                  {
+                    where: {
+                      accountNumber: company_account_number,
+                    },
+                  }
+                );
+
+              return res.status(200).json({
+                message: `Transfer SUCCESSFUL!!`,
+                data: sucessful_transaction_record
+              })
+            }else{
+              const failed_transaction_record = await investment_Records.create({
+                id: v4(),
+                amount: amount,
+                investor_name: user_firstName + " " + user_lastName,
+                investor_id: user_id,
+                investment_company_id: company_id,
+                transaction_status: "FAILED"
+              })
+              return res.status(400).json({
+                message: `Transfer FAILED.`,
+                data: failed_transaction_record
+              })        
+            }
           }
-        );
-
-        if( investment_Transfer && successful_Transfer){
-          const sucessful_transaction_record = await investment_Records.create({
-            id: v4(),
-            amount: amount,
-            investor_name: user_firstName + " " + user_lastName,
-            investor_id: user_id,
-            investment_company_id: company_id,
-            transaction_status: "SUCCESSFUL",
-          })
-
-          await Investor.create({
-            id:v4(),
-            firstName:user_details.firstName,
-            lastName:user_details.lastName,
-            accountNumber:user_details.accountNumber,
-            email:user_details.email,
-            investedCapital:amount,
-            expectedReturn:amount * company_details.roi,
-            monthlyReturn:amount * company_details.roi / 4,
-            active: true,
-            companyId:company_id
-          })
-
-    
-          return res.status(200).json({
-            message: `Transfer SUCCESSFUL!!`,
-            data: sucessful_transaction_record
-          })
-
         }else{
-          const failed_transaction_record = await investment_Records.create({
-            id: v4(),
-            amount: amount,
-            investor_name: user_firstName + " " + user_lastName,
-            investor_id: user_id,
-            investment_company_id: company_id,
-            transaction_status: "FAILED"
-          })
-
           return res.status(400).json({
-            message: `Transfer is UNSUCESSFUL. Please wait for some minutes and try again.`,
-            data: failed_transaction_record
-          })        
+            message: `Company does not exist. Please check if account number is correct`
+          })
         }
       }else{
         return res.status(400).json({

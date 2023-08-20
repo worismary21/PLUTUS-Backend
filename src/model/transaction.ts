@@ -74,10 +74,6 @@ Transaction.init({
     modelName:"Transactions"
 })
 
-
-
-
-
 export default Transaction
 
 
