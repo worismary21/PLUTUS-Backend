@@ -22,7 +22,7 @@ router.put('/verify-user',auth, verifyUser)
 router.put('/change-password-email', verifyChangePasswordEmail)
 router.put('/change-password-otp/:id', verifyChangePasswordOTP)
 router.put('/change-password/:id', verifyChangePassword);
-router.put('/updateaccount', updateUserProfile);
+router.put('/updateAccount', updateUserProfile);
 router.put('/profileimage', upload.single('image'), createUserImage)
 router.post("/company", isAdmin, createCompany);
 router.get("/get", getUsersByAdmin);

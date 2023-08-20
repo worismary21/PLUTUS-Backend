@@ -13,6 +13,7 @@ import { companyAccount } from "./utils/auth";
 import Joi from "joi";
 import { getPagination } from "./utils/pagination";
 import bcrypt from "bcrypt";
+import { IPROFILE } from "../model/companyProfile";
 
 dotenv.config();
 
@@ -177,5 +178,58 @@ export const createCompany = async (
         message: `Internal Server Error`,
         Error: "/users/login",
       });
+    }
+  };
+
+
+  export const updateAdminProfile = async(req: Request, res: Response, next: NextFunction) => { 
+    try { 
+       
+    let { companyName,email, phoneNumber, address, zipCode, city, state, country } = req.body
+  
+      console.log("image live", companyName, email, phoneNumber, address, zipCode, city, state, country)
+  
+    const updateField: Partial<IPROFILE> = {}
+  
+    if(!companyName){
+        updateField.companyName = companyName
+    }
+    if(!email){
+        updateField. email =  email
+    }
+    if(!phoneNumber){
+        updateField. phoneNumber =  phoneNumber
+    }
+    if(!address){
+        updateField. address =  address
+    }
+    if(!zipCode){
+        updateField. zipCode =  zipCode
+    }
+    if(!city){
+        updateField. city =  city
+    }
+    if(!state){
+        updateField. state =  state
+    }
+    if(!country){
+        updateField. country =  country
+    }
+  
+    const updatedAdmin = await Company.update(updateField,  {where: {email: email }} ) as unknown as IPROFILE
+  
+       if (updatedAdmin) {
+          return res.status(200).json({
+             message: `Admin updated successfully`,
+             data: updatedAdmin
+          });
+       }
+  
+       return res.status(401).json({
+          message: `Update operation failed`
+       });
+    } catch (error: any) {
+       console.log(error.message);
+       return res.status(500).json({ message: 'Internal server error' });
     }
   };
