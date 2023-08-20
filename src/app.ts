@@ -6,9 +6,13 @@ import config from "./config/dbConfig";
 import userRoute from './routes/users.routes';
 import beneficiaryRoute from './routes/beneficiary.routes'
 import transferRoute from './routes/transfer.route'
-import transaction from './routes/transaction.route';
-// import transaction from './routes/transfer.route'
+import transactions from './routes/transaction.route';
+import companyRoute from './routes/company.route'
+import transaction from './routes/transfer.route';
+import investorRoute from './routes/investor.route';
 import cors from 'cors';
+import logger from "morgan"
+
 
 
 const { PORT } = config
@@ -17,12 +21,14 @@ dotenv.config()
 
 const app = express()
 app.use(express.json());
+app.use(logger('dev'));
 app.use(cors())
-
 app.use('/user', userRoute)
+app.use('/investor', investorRoute)
 app.use('/beneficiary', beneficiaryRoute)
 app.use('/transfer', transferRoute)
-app.use('/transactions', transaction)
+app.use('/company', companyRoute)
+app.use('/transactions', transactions)
 
 
 app.get('/', (req, res) => {
@@ -30,12 +36,13 @@ app.get('/', (req, res) => {
     }
 )
 
-db.sync().then(() => {
+db.sync({}).then(() => {
     console.log('Database is connected');
     }).catch((err:HttpError) => {
     console.log(err);
 });
 
+// {force:true}
 
 const port = PORT 
 

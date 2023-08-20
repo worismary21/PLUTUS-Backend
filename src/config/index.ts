@@ -1,9 +1,9 @@
-import  {Sequelize} from "sequelize";
-import dotenv from 'dotenv'
-import config from './dbConfig'
-dotenv.config()
+import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
+import config from "./dbConfig";
+dotenv.config();
 
-const {DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD} = config
+const { DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD } = config;
 
 export const db = new Sequelize(
     DB_NAME!, //name of database
@@ -21,5 +21,6 @@ export const db = new Sequelize(
           rejectUnauthorized: true,
         },
       },
-    }
-  );
+    },
+  
+);

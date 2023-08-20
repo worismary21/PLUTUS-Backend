@@ -1,6 +1,5 @@
 import { DataTypes, Model, Sequelize } from "sequelize"
 import { db } from "../config"
-import Investment, { INVESTMENT } from "./investment"
 import Company from "./company"
 
 
@@ -8,8 +7,6 @@ type Saving = {
     id:string,
     amount:number,
 }
-
-
 
 export type IUSER = {
     id:string,
@@ -21,24 +18,23 @@ export type IUSER = {
     password:string,
     otp:string,
     token:string,
-    imageUrl:string,
+    imageUrl?:string,
     notification:string,
     accountBalance:number,
     role: string,
-    verify: boolean
+    verify: boolean,
+    phoneNumber:string,
+    address:string,
+    zipCode:string,
+    city:string,
+    state:string,
+    country:string
 }
 
-// class User extends Model<IUSER>{
-//     public static associate(models:INVESTMENT) {
-//         User.hasMany(Investment, {foreignKey:'userId', as:'Investment'} )
-//     }
-// }
 class User extends Model<IUSER>{
-   id: string | undefined
-   static id: string
-    public static associate(models: { Investment: typeof Investment }): void {
-        User.hasMany(models.Investment, { foreignKey: "userId", as: "Investment" });
-      };
+     email: any
+     id: any
+     otp: any
 }
 
 User.init({
@@ -98,7 +94,31 @@ User.init({
     verify:{
         type:DataTypes.BOOLEAN,
         allowNull:true
-    }
+    },
+    phoneNumber: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+    address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+    zipCode: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+    city: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+    state: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+    country: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
 }, {
     sequelize:db,
     tableName:"User",

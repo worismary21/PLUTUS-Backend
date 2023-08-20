@@ -4,11 +4,8 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import otpGenerator from "otp-generator";
 import { OTP_LENGTH, OTP_CONFIG } from "./notifications";
 import dotenv  from "dotenv";
+import User, { IUSER } from "../../model/user";
 dotenv.config()
-
-
-
-
 
 
 export const hashedPassword = async (password: string) => {
@@ -20,6 +17,12 @@ export const hashedPassword = async (password: string) => {
 export const genAccount = () => {
   const prefix = '015';
     const num = Math.floor(10000000 + Math.random() * 9000);
+  const account = `${prefix + num}`
+  return account;
+}
+export const companyAccount = () => {
+  const prefix = '301';
+    const num = Math.floor(10000000 + Math.random() * 900000);
   const account = `${prefix + num}`
   return account;
 }
@@ -41,13 +44,17 @@ export const verifyToken = (token:any)=>{
 
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) =>{
   const token = req.headers.authorization?.split(' ')[1];
+  console.log(token)
 
     if (!token) {
       throw new Error('No token provided');
     }
-  const decodedToken = jwt.verify(token, process.env.APP_SECRET!) as JwtPayload;;
-  
-  if(decodedToken.role !== 'admin'){
+  const decodedToken = jwt.verify(token, process.env.APP_SECRET!) as JwtPayload;
+
+  const user = await User.findOne({where : {id:decodedToken.id}}) as unknown as IUSER
+
+
+  if(user.role !== 'admin'){
       throw new Error('You are not admin')
   }else{
       next();
