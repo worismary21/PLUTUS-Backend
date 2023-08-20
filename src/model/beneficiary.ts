@@ -10,12 +10,12 @@ export interface BeneficiaryDetails {
     beneficiaryName: string;
     accountNumber: string;
 }
-
-class Beneficiary extends Model<BeneficiaryDetails> {
-    public static associate(models: { User: typeof User}): void {
-        Beneficiary.belongsTo(models.User, { foreignKey: "userId", as: "User"})
-    }
-}
+class Beneficiary extends Model<BeneficiaryDetails> {}
+// class Beneficiary extends Model<BeneficiaryDetails> {
+//     public static associate(models: { User: typeof User}): void {
+//         Beneficiary.belongsTo(models.User, { foreignKey: "userId", as: "User"})
+//     }
+// }
 
 Beneficiary.init(
     {

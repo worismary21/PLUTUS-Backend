@@ -2,8 +2,6 @@ import { DataTypes, Model, Sequelize } from "sequelize"
 import { db } from "../config"
 import Company from "./company"
 
-
-
 export type TRANSACTIONS = {
     id:string,
     transactionId:string,
@@ -76,8 +74,29 @@ Transaction.init({
     modelName:"Transactions"
 })
 
-
-
-
-
 export default Transaction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

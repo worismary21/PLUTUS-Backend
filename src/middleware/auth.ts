@@ -16,7 +16,8 @@ export const auth = async(req:JwtPayload, res:Response, next:NextFunction) => {
         }
 
         const token = authorization.slice(7, authorization.length)
-        let verified = jwt.verify(token, process.env.APP_SECRET!)
+        let verified:any = jwt.verify(token, process.env.APP_SECRET!)
+
 
         if(!verified){
             return res.status(401).json({
@@ -24,9 +25,9 @@ export const auth = async(req:JwtPayload, res:Response, next:NextFunction) => {
             })
         }
 
-        const {id} = verified as {[key:string]:string}
+        const user_id = verified.id
 
-        const user = await User.findOne({where:{id: id}})as unknown as IUSER;
+        const user = await User.findOne({where: {id:user_id}})as unknown as IUSER;
 
         if(!user){
             return res.status(401).json({
@@ -42,7 +43,6 @@ export const auth = async(req:JwtPayload, res:Response, next:NextFunction) => {
             message: "unauthorised",
         })
     }
-    
 }
 
 export const companyAuth = async(req:JwtPayload, res:Response, next:NextFunction) => {
