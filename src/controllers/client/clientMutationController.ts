@@ -15,7 +15,11 @@ import Company from "../../model/company";
 dotenv.config();
 
 //Controller for signing up
-export const userSignup = async ( req: Request, res: Response, next: NextFunction) => {
+export const userSignup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const schema = signUpUser
     const { error, value } = schema.validate(req.body);
@@ -161,6 +165,9 @@ export const loginUser = async (
     const user = await User.findOne({ where: { email } }) as unknown as IUSER;
 
     if (!user) {
+      return res
+        .status(404)
+        .json({ message: `User does not exist, please register` });
       const user:any = await Company.findOne({ where: { email } }) as unknown as IUSER;
 
       if (user && user.verified === true) {
@@ -412,6 +419,7 @@ export const updateUserProfile = async (
 ) => {
   try {
       let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
+        console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
         // console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
       const updateField: Partial<IUSER> = {}
       if(!firstName){
@@ -462,8 +470,8 @@ export const updateUserProfile = async (
 
 export const createUserImage = async (req: Request, res: Response) => {
   try {
-
-      const {email} = req.body
+          const {email} = req.body
+      console.log("email ",email)
       const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
       const updateField: Partial<IUSER> = {}
       const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
