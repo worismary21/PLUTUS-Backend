@@ -1,141 +1,159 @@
-import { DataTypes, Model, Sequelize } from "sequelize"
-import { db } from "../config"
-import Investor from "./investor"
-
+import { DataTypes, Model, Sequelize } from "sequelize";
+import { db } from "../config";
+import Investor from "./investor";
 
 export type ICOMPANY = {
-    id:string,
-    companyName:string,
-    company_description:string,
-    email:string,
-    password:string,
-    otp: string,
-    accountNumber:string,
-    wallet:number,
-    verified:boolean,
-    user_type: string,
-    active:boolean,
-    businessType:string,
-    roi:number
+  id: string;
+  companyName: string;
+  company_description: string;
+  email: string;
+  password: string;
+  otp: string;
+  accountNumber: string;
+  wallet: number;
+  verified: boolean;
+  role: string;
+  active: boolean;
+  businessType: string;
+  roi: number;
+  noOfInvestors: number;
+  investment_category: string;
+  investment_description: string;
+  duration: number;
+  min_investment_amount: string;
+  max_investment_amount: string;
+  imageUrl:string;
+  phoneNumber:string;
+  address:string;
+  zipCode:string;
+  city:string;
+  state:string;
+  country:string
+};
+
+class Company extends Model<ICOMPANY> {
+  public static associate(models: { Investor: typeof Investor }): void {
+    Company.hasMany(models.Investor, {
+      foreignKey: "companyId",
+      as: "Company",
+    });
+  }
 }
 
-class Company extends Model<ICOMPANY>{
-    public static associate(models: { Investor: typeof Investor }): void {
-        Company.hasMany(models.Investor, {foreignKey:'companyId', as:'Company'} )
-    }
-}
-
-Company.init({
-    id:{
-        type:DataTypes.UUID,
-        primaryKey:true,
-        allowNull:false
+Company.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      allowNull: false,
     },
-    companyName:{
-        type:DataTypes.STRING,
-        allowNull:false
+    companyName: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    company_description:{
-        type:DataTypes.STRING,
-        allowNull:false
+    company_description: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    email:{
-        type:DataTypes.STRING,
-        allowNull:false
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    password:{
-        type:DataTypes.STRING,
-        allowNull:false
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    otp:{
-        type:DataTypes.STRING,
-        allowNull:false
+    otp: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    accountNumber:{
-        type:DataTypes.STRING,
-        allowNull:false
+    accountNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    wallet:{
-        type:DataTypes.INTEGER,
-        allowNull:false
+    wallet: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
-    verified:{
-        type:DataTypes.BOOLEAN,
-        allowNull:false
+    verified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
     },
-    user_type:{
-        type:DataTypes.STRING,
-        allowNull:false
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-   active:{
-        type:DataTypes.BOOLEAN,
-        allowNull:false
-   },
-   businessType:{
-    type:DataTypes.STRING,
-    allowNull:false,
+    active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
     },
-    roi:{
-        type:DataTypes.FLOAT,
-        allowNull:false
+    businessType: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-}, {
-    sequelize:db,
-    tableName:"Company"
-})
+    roi: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    noOfInvestors: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    investment_category: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    investment_description: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    duration: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    min_investment_amount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    max_investment_amount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    imageUrl:{
+      type:DataTypes.STRING,
+      allowNull:true
+  },
+  phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  zipCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  state: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  country: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  },
+  {
+    sequelize: db,
+    tableName: "Company",
+  }
+);
 
-export default Company
+export default Company;
 
-
-
-
-
-
-
-
-
-// id:string,
-// companyName:string,
-// company_description:string,
-// investment_description:string
-// rateOfReturn:number,
-// duration:string ,
-// email:string,
-// password:string,
-// otp: string,
-// accountNumber:string,
-// wallet:number,
-// verified:boolean,
-// user_type: "company"
-// active:boolean,
-// businessType:string,
-
-
-
-// export enum Duration {
-//     THREE_MONTH = "3 Month",
-//     SIX_MONTH = "6 Month",
-//     TWELVE_MONTH = "12 Month",
-//     DEFAULT = ""
-
-//   }
-
-// export enum BusinessType {
-//     AGRICULTURE = "Agriculture",
-//     MANUFACTURING = "Manufacturing",
-//     MINING = "Mining",
-//     TRANSPORTATION = "Transportation",
-//     CONSTRUCTION = "Construction",
-//     FINANCE = "Finance",
-//     REAL_ESTATE = "Real Estate",
-//     EDUCATION = "Education",
-//     HEALTH_CARE = "Health Care",
-//     INFORMATION_TECHNOLOGY = "Information Technology",
-//     COMMUNICATION = "Communication",
-//     ENTERTAINMENT = "Entertainment",
-//     HOSPITALITY = "Hospitality",
-//     RETAIL = "Retail",
-//     OTHERS = "Others",
-//     DEFAULT = "",
-// }
 
