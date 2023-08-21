@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import Company from "../../model/company";
 import investment_Records from '../../model/investmentRecord'
 import Investor from "../../model/investor";
+import { transfer_Beneficiary } from '../../utils/inputvalidation'
 
 
 dotenv.config();
@@ -18,6 +19,11 @@ export const transferToBeneficiary = async (
   NextFunction: NextFunction
 ) => {
   try {
+    const schema = transfer_Beneficiary
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
 
     const token: any = req.headers.authorization;
     const token_info = token.split(" ")[1];
