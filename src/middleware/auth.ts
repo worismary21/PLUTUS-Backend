@@ -18,7 +18,6 @@ export const auth = async(req:JwtPayload, res:Response, next:NextFunction) => {
         const token = authorization.slice(7, authorization.length)
         let verified:any = jwt.verify(token, process.env.APP_SECRET!)
 
-
         if(!verified){
             return res.status(401).json({
                 message: "unauthorised"
