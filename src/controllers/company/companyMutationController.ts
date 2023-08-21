@@ -39,6 +39,7 @@ export const createCompany = async (
       }) 
       const user_role = user_details.role
   
+
       if (decodedToken) {
         const {
           companyName,
@@ -302,3 +303,17 @@ export const createCompany = async (
   // try { 
   //   await Company.drop()
   //   console.log("table has been drop")
+
+
+
+
+
+
+
+
+
+
+
+
+
+

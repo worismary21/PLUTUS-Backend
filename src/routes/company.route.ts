@@ -1,9 +1,10 @@
 import express from 'express';
 import { getAllCompanies } from "../controllers/company/companyQueryController";
-import { loginCompany, createCompany, deleteCompany, updateCompanyProfile, createCompanyImage } from "../controllers/company/companyMutationController";
-import { auth } from '../middleware/auth';
+import { loginCompany, updateCompanyProfile, createCompanyImage } from "../controllers/company/companyMutationController";
 import { isAdmin } from '../utils/auth';
 import { upload } from '../middleware/uploadImage';
+import { createCompany, deleteCompany } from "../controllers/company/companyMutationController";
+import { auth } from '../middleware/auth';
 
 const router = express.Router();
 

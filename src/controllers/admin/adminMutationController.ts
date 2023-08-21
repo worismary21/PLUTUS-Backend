@@ -16,7 +16,7 @@ export const createAdmin = async (
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    const { firstName, lastName, email, password, phoneNumber } = req.body;
+    const { firstName, lastName, email, password } = req.body;
 
     const existingAdminUser = await User.findOne({ where: { email } });
 
@@ -38,7 +38,7 @@ export const createAdmin = async (
         imageUrl: "",
         notification: "",
         accountBalance: 0,
-        phoneNumber,
+        phoneNumber:"",
         role: "admin",
         verify: true,
         address: "",

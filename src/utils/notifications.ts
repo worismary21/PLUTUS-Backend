@@ -54,6 +54,7 @@ export const emailHtmlForAdmin = (email:string, OTP:string)=>{
                     return mail
 }
 
+
 export const emailHtmlForCompany = (companyName:string, email:string, password:string,)=>{
     const mail = `<h1>Welcome to Plutus<h1>
                     <p>Hello ${companyName},</p><br>
