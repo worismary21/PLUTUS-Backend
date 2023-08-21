@@ -43,11 +43,11 @@ db.sync().then(() => {
 });
 
 
-// db.sync({force:true}).then(() => {
-//     console.log('Database is connected');
-//     }).catch((err:HttpError) => {
-//     console.log(err);
-// });
+db.sync({alter:true}).then(() => {
+    console.log('Database is connected');
+    }).catch((err:HttpError) => {
+    console.log(err);
+});
 
 
 db.sync()

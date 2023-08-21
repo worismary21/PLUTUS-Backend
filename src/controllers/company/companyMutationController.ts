@@ -29,6 +29,7 @@ export const createCompany = async (
         return res.status(400).json({ message: error.details[0].message });
       }
   
+      console.log("hello")
       const token: any = req.headers.authorization;
       const token_info = token.split(" ")[1];
       const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
