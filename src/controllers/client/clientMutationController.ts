@@ -178,6 +178,9 @@ export const loginUser = async (
             email: user.email,
             user_token: token,
             role: user.role,
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName
           });
         } else {
           res.status(400).json({
