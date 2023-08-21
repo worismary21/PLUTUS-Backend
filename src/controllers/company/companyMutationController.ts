@@ -12,6 +12,7 @@ import Joi from "joi";
 import bcrypt from "bcrypt";
 import { createCompanySchema } from "../../utils/inputvalidation";
 
+
 dotenv.config();
 
 
@@ -28,6 +29,7 @@ export const createCompany = async (
         return res.status(400).json({ message: error.details[0].message });
       }
   
+      console.log("hello")
       const token: any = req.headers.authorization;
       const token_info = token.split(" ")[1];
       const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
@@ -38,6 +40,7 @@ export const createCompany = async (
       }) 
       const user_role = user_details.role
   
+
       if (decodedToken) {
         const {
           companyName,
@@ -89,6 +92,13 @@ export const createCompany = async (
               duration,
               min_investment_amount,
               max_investment_amount,
+              imageUrl:"",
+              phoneNumber:"",
+              address:"",
+              zipCode:"",
+              city:"",
+              state:"",
+              country:""
             })) as unknown as ICOMPANY;
   
             const company_dets = (await Company.findOne({
@@ -182,6 +192,91 @@ export const createCompany = async (
       });
     }
   };
+
+  export const updateCompanyProfile = async(req: Request, res: Response, next: NextFunction) => { 
+    try { 
+       
+    let { companyName,email, phoneNumber, address, zipCode, city, state, country } = req.body
+  
+      console.log("image live", companyName, email, phoneNumber, address, zipCode, city, state, country)
+  
+    const updateField: Partial<ICOMPANY> = {}
+  
+    if(companyName !== ""){
+        updateField.companyName = companyName
+    }
+    if(email !== ""){
+        updateField. email =  email
+    }
+    if(phoneNumber !== ""){
+        updateField. phoneNumber =  phoneNumber
+    }
+    if(address !== ""){
+        updateField. address =  address
+    }
+    if(zipCode !== ""){
+        updateField. zipCode =  zipCode
+    }
+    if(city !== ""){
+        updateField. city =  city
+    }
+    if(state !== ""){
+        updateField. state =  state
+    }
+    if(country !== ""){
+        updateField. country =  country
+    }
+    console.log('update live',updateField)
+    const updatedCompany = await Company.update(updateField,  {where: {email: email }} ) as unknown as ICOMPANY
+  
+       if (updatedCompany) {
+          return res.status(200).json({
+             message: `Company updated successfully`,
+             data: updatedCompany
+          });
+       }
+  
+       return res.status(401).json({
+          message: `Update operation failed`
+       });
+    } catch (error: any) {
+       console.log(error.message);
+       return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+
+  export const createCompanyImage = async (req: Request, res: Response) =>{
+    try{
+  
+        const {email} = req.body
+  
+    console.log("email ",email)
+  
+    const user = await Company.findOne({where: {email: email }} ) as unknown as ICOMPANY
+  
+    const updateField: Partial<ICOMPANY> = {}
+  
+  
+    const updateUserImage = await Company.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as ICOMPANY
+  
+    if (updateUserImage) {
+        return res.status(200).json({
+           message: `User updated successfully`,
+           data: updateUserImage
+        });
+     }
+  
+     return res.status(401).json({
+        message: `Update operation failed`
+     });
+  
+    }catch(error){
+        return res.status(500).json({
+            message: `Error Uploading Imsge`
+         });
+    }
+  
+  }
   
   //Controller for deleting company
   export const deleteCompany = async (
@@ -205,3 +300,21 @@ export const createCompany = async (
     }
   };
   
+
+  // try { 
+  //   await Company.drop()
+  //   console.log("table has been drop")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
