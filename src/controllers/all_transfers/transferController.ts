@@ -363,9 +363,11 @@ export const transferToInvestmentCompany = async (
                 email:user_details.email,
                 investedCapital:amount,
                 expectedReturn:expected_return_amount,
+                rateOfReturn:0,
                 monthlyReturn:expected_monthly_return,
                 active: true,
-                companyId:company_id
+                companyId:company_id,
+                companyName: ""
               })
 
                 const investor_count = company_dets.noOfInvestors + 1
