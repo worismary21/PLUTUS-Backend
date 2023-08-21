@@ -15,7 +15,7 @@ export const createBeneficiaries = async (
      const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
  
      const user_id = decodedToken.id;
-     const { beneficiaryName, accountNumber, beneficiaryType } = req.body;
+     const { beneficiaryName, accountNumber } = req.body;
   
       const user = await User.findOne({ where: { id: user_id } });
   
