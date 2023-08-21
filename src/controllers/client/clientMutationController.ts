@@ -10,15 +10,12 @@ import dotenv from "dotenv";
 import Joi from "joi";
 import bcrypt from "bcrypt";
 import { signUpUser } from '../../utils/inputvalidation'
+import Company from "../../model/company";
 
 dotenv.config();
 
 //Controller for signing up
-export const userSignup = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const userSignup = async ( req: Request, res: Response, next: NextFunction) => {
   try {
     const schema = signUpUser
     const { error, value } = schema.validate(req.body);
@@ -164,9 +161,37 @@ export const loginUser = async (
     const user = await User.findOne({ where: { email } }) as unknown as IUSER;
 
     if (!user) {
+      const user:any = await Company.findOne({ where: { email } }) as unknown as IUSER;
+
+      if (user && user.verified === true) {
+        const validate = await bcrypt.compare(password, user.password);
+
+        if (validate) {
+          const token = jwt.sign(
+            { email: user.email, id: user.id },
+            process.env.APP_SECRET!,
+            { expiresIn: "1d" }
+          );
+
+          return res.status(200).json({
+            message: `Login successfully`,
+            email: user.email,
+            user_token: token,
+            role: user.role,
+          });
+        } else {
+          res.status(400).json({
+            message: `Password is incorrect. Please check password details and try again.`,
+          });
+        }
+      } else {
+        return res.status(400).json({
+          message: `Company Not Verified`,
+        });
+      }
       return res
         .status(404)
-        .json({ message: `User does not exist, please register` });
+        .json({ message: `Company does not exist, please register` });
     } else {
       if (user && user.verify === true) {
         const validate = await bcrypt.compare(password, user.password);
@@ -383,49 +408,49 @@ export const updateUserProfile = async (
   next: NextFunction
 ) => {
   try {
-    //   let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
-    //     console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
-    //   const updateField: Partial<IUSER> = {}
-    //   if(!firstName){
-    //       updateField.firstName = firstName
-    //   }
-    //   if(!lastName){
-    //       updateField.lastName = lastName
-    //   }
-    //   if(!email){
-    //       updateField. email =  email
-    //   }
-    //   if(!phoneNumber){
-    //       updateField. phoneNumber =  phoneNumber
-    //   }
-    //   // if(!imageUrl){
-    //   //     updateField.imageUrl =  req.file
-    //   // }
-    //   if(!address){
-    //       updateField. address =  address
-    //   }
-    //   if(!zipCode){
-    //       updateField. zipCode =  zipCode
-    //   }
-    //   if(!city){
-    //       updateField. city =  city
-    //   }
-    //   if(!state){
-    //       updateField. state =  state
-    //   }
-    //   if(!country){
-    //       updateField. country =  country
-    //   }
-    //   const updatedUser = await User.update(updateField,  {where: {email: email }} ) as unknown as IUSER
-    //      if (updatedUser) {
-    //         return res.status(200).json({
-    //            message: `User updated successfully`,
-    //            data: updatedUser
-    //         });
-    //      }
-    //      return res.status(401).json({
-    //         message: `Update operation failed`
-    //      });
+      let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
+        // console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
+      const updateField: Partial<IUSER> = {}
+      if(!firstName){
+          updateField.firstName = firstName
+      }
+      if(!lastName){
+          updateField.lastName = lastName
+      }
+      if(!email){
+          updateField. email =  email
+      }
+      if(!phoneNumber){
+          updateField. phoneNumber =  phoneNumber
+      }
+      // if(!imageUrl){
+      //     updateField.imageUrl =  req.file
+      // }
+      if(!address){
+          updateField. address =  address
+      }
+      if(!zipCode){
+          updateField. zipCode =  zipCode
+      }
+      if(!city){
+          updateField. city =  city
+      }
+      if(!state){
+          updateField. state =  state
+      }
+      if(!country){
+          updateField. country =  country
+      }
+      const updatedUser = await User.update(updateField,  {where: {email: email }} ) as unknown as IUSER
+         if (updatedUser) {
+            return res.status(200).json({
+               message: `Your profile has been updated successfully`,
+               data: updatedUser
+            });
+         }
+         return res.status(401).json({
+            message: `Update operation failed`
+         });
   } catch (error: any) {
     console.log(error.message);
     return res.status(500).json({ message: "Internal server error" });
@@ -434,20 +459,20 @@ export const updateUserProfile = async (
 
 export const createUserImage = async (req: Request, res: Response) => {
   try {
-    //       const {email} = req.body
-    //   console.log("email ",email)
-    //   const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
-    //   const updateField: Partial<IUSER> = {}
-    //   const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
-    //   if (updateUserImage) {
-    //       return res.status(200).json({
-    //          message: `User updated successfully`,
-    //          data: updateUserImage
-    //       });
-    //    }
-    //    return res.status(401).json({
-    //       message: `Update operation failed`
-    //    });
+
+      const {email} = req.body
+      const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
+      const updateField: Partial<IUSER> = {}
+      const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
+      if (updateUserImage) {
+          return res.status(200).json({
+             message: `Your profile image has been updated successfully`,
+             data: updateUserImage
+          });
+       }
+       return res.status(401).json({
+          message: `Image update operation failed`
+       });
   } catch (error) {
     return res.status(500).json({
       message: `Error Uploading Imsge`,

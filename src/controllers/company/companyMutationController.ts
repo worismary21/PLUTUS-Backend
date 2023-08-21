@@ -14,7 +14,6 @@ import { createCompanySchema } from "../../utils/inputvalidation";
 
 dotenv.config();
 
-
 //Controller For Creating Company
 export const createCompany = async (
     req: Request,
@@ -38,7 +37,7 @@ export const createCompany = async (
         where: { id: userId}
       }) 
       const user_role = user_details.role
-  
+
       if (decodedToken) {
         const {
           companyName,
@@ -125,65 +124,7 @@ export const createCompany = async (
       return res.status(500).json({ error: "Internal server error" });
     }
   };
-  
-  //Controller for Company Login
-  
-  export const loginCompany = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const schema = Joi.object({
-        email: Joi.string().email().required(),
-        password: Joi.string().required(),
-      });
-      const { error, value } = schema.validate(req.body);
-      if (error) {
-        return res.status(400).json({ message: error.details[0].message });
-      }
-  
-      const { email, password } = req.body;
-  
-      const company_details = (await Company.findOne({
-        where: { email },
-      })) as unknown as IUSER;
-  
-      if (!company_details) {
-        return res
-          .status(404)
-          .json({
-            message: `Company does not exist, please register via the Signup page`,
-          });
-      } else {
-        const validate = await bcrypt.compare(password, company_details.password);
-  
-        if (validate) {
-          const token = jwt.sign(
-            { email: company_details.email, id: company_details.id },
-            process.env.APP_SECRET!,
-            { expiresIn: "1d" }
-          );
-  
-          return res.status(200).json({
-            message: `Login SUCCESSFUL`,
-            token,
-          });
-        } else {
-          return res.status(400).json({
-            message: `Invalid Password. Please ensure password is correct.`,
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Login company:", error);
-      return res.status(500).json({
-        message: `Internal Server Error`,
-        Error: "/company/login",
-      });
-    }
-  };
-  
+
   //Controller for deleting company
   export const deleteCompany = async (
     req: Request,
@@ -206,3 +147,18 @@ export const createCompany = async (
     }
   };
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
