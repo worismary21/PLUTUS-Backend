@@ -25,7 +25,6 @@ router.post('/login', loginUser);
 
 router.post('/adminSignup', createAdmin)
 router.put('/forgot-password', forgotPassword)
-
 router.patch('/verify-user',auth, verifyUser)
 router.put('/change-password-email', verifyChangePasswordEmail)
 router.put('/change-password-otp/:id', verifyChangePasswordOTP)
