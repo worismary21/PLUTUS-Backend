@@ -3,19 +3,26 @@ import Beneficiary from "../../model/beneficiary";
 import User from "../../model/user";
 import { v4 } from "uuid";
 import jwt, { JwtPayload } from 'jsonwebtoken'
+import { createBeneficiary } from '../../utils/inputvalidation'
 
 export const createBeneficiaries = async (
     req: Request,
     res: Response,
     NextFunction: NextFunction
   ) => {
-    try {
+  try {
+    const schema = createBeneficiary
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
      const token: any = req.headers.authorization;
      const token_info = token.split(" ")[1];
      const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
  
      const user_id = decodedToken.id;
-     const { beneficiaryName, accountNumber, beneficiaryType } = req.body;
+     const { beneficiaryName, accountNumber } = req.body;
   
       const user = await User.findOne({ where: { id: user_id } });
   

@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import User from '../../model/user'
 import Transfers from '../../model/transfer'
 import Beneficiary from '../../model/beneficiary'
+import Investor from '../../model/investor';
 
 dotenv.config()
 
@@ -209,6 +210,49 @@ export const getAllIncome = async (
 }
 
 
+export const getInvestment = async (req: Request, res: Response) => {
+     try {
+       const token: any = req.headers.authorization;
+       // console.log(token);
+       const token_info = token.split(" ")[1];
+       const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+   
+       const email = decodedToken.email;
+       // console.log("EMAIL", email);
+   
+       const investment = await Investor.findAll({
+         where: { email: email },
+       });
+       // console.log("INVESTOR", investment);
+       const allInvestment = await Investor.findAll();
+       console.log(allInvestment);
+   
+       if (investment) {
+         const totalInvestedCapital = await Investor.sum("investedCapital", {
+           where: { email: email },
+         });
+         console.log("TOTAL", totalInvestedCapital);
+   
+         const totalInvestments = await Investor.count({
+           where: { email: email },
+         });
+   
+         return res.status(200).json({
+           message: "Fetching Investor Successfully",
+           data: investment,
+           totalInvestedCapital: totalInvestedCapital,
+           totalInvestments: totalInvestments,
+         });
+       } else {
+         res.status(400).json({
+           message: "Error Fetching Investor",
+         });
+       }
+     } catch (error) {
+       console.error(error);
+       res.status(500).json({ error: "Internal Server Error" });
+     }
+   };
 
 
 

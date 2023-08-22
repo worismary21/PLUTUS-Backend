@@ -21,75 +21,78 @@ export const userSignup = async (
   res: Response,
   next: NextFunction
 ) => {
+  //HASH THE PASSWORD
 
-      //HASH THE PASSWORD
-     
-     
-    // TO CREATE USER
-    try {
-        const { firstName, lastName, email,password } = req.body 
-       
-        //CHECK IF THE NEW USER EMAIL ALREADY EXISTS 
-        const existingUser = await User.findOne({ where: { email: email } });
-        if (existingUser) {
-            return res.status(400).json({ error: "Email already exists" });
-        }
+  // TO CREATE USER
+  try {
+    const { firstName, lastName, email, password } = req.body;
 
-      
-        //HASH THE PASSWORD
-       
-        const hashPassword: string = await hashedPassword(password);
+    //CHECK IF THE NEW USER EMAIL ALREADY EXISTS
+    const existingUser = await User.findOne({ where: { email: email } });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
 
-        // Account number
-        const accNumber: string = genAccount();
+    //HASH THE PASSWORD
 
-        // OTP
-        const OTP = generateOTP()
+    const hashPassword: string = await hashedPassword(password);
 
-        //CREATE THE NEW USER
-        const newUser = await User.create({
-            id: v4(),
-            firstName,
-            lastName,
-            email,
-            password: hashPassword,
-            accountNumber: accNumber,
-            savingsWallet: {id:v4(), amount:0},
-            otp: OTP,
-            token: "",
-            imageUrl: '',
-            notification: "",
-            accountBalance: 10000,
-            role: "user",
-            verify: false,
-            phoneNumber: "", 
-            address: "", 
-            zipCode: "", 
-            city:"", 
-            state: "", 
-            country:""
-        });
+    // Account number
+    const accNumber: string = genAccount();
 
-        const user = await User.findOne({ where: { email } }) as unknown as IUSER
+    // OTP
+    const OTP = generateOTP();
 
-        const token = jwt.sign({ email: user.email, id: user.id }, process.env.APP_SECRET!, {
-            expiresIn: '1d'})
-       
-        //RETURN NEW USER
-        const html = emailHtml(email, OTP)
-            await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html)
-        return res.status(200).json({
-            message:`User created successfully`,
-            newUser,
-            token
-        });
-    } catch (error) {
-        console.error("Error creating user:", error);
-        return res.status(500).json({ error: "Internal server error" });
+    //CREATE THE NEW USER
+    const newUser = await User.create({
+      id: v4(),
+      firstName,
+      lastName,
+      email,
+      password: hashPassword,
+      accountNumber: accNumber,
+      savingsWallet: { id: v4(), amount: 0 },
+      otp: OTP,
+      token: "",
+      imageUrl: "",
+      notification: "",
+      accountBalance: 10000,
+      role: "user",
+      verify: false,
+      phoneNumber: "",
+      address: "",
+      zipCode: "",
+      city: "",
+      state: "",
+      country: "",
+    });
+
+    const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
+
+    const token = jwt.sign(
+      { email: user.email, id: user.id },
+      process.env.APP_SECRET!,
+      {
+        expiresIn: "1d",
+      }
+    );
+
+    //RETURN NEW USER
+    const html = emailHtml(email, OTP);
+    await sendmail(`${process.env.GMAIL_USER}`, email, "Welcome", html);
+    return res.status(200).json({
+      message: `User created successfully`,
+      newUser,
+      token,
+      email: user.email,
+      role: user.role,
+    });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
-}
+};
 
-    
 export const forgotPassword = async (
   req: Request,
   res: Response,
@@ -132,8 +135,6 @@ export const forgotPassword = async (
   res.json("Recover password");
 };
 
-
-
 export const verifyUser = async (
   req: JwtPayload,
   res: Response,
@@ -141,11 +142,10 @@ export const verifyUser = async (
 ) => {
   try {
     const { id } = req.user;
-    console.log(id)
     const { otp } = req.body;
 
     // Check if user exists
-    const user = await User.findOne({ where: { id } }) as unknown as IUSER
+    const user = (await User.findOne({ where: { id } })) as unknown as IUSER;
     if (!user) {
       return res.status(400).json({ error: "User not found" });
     }
@@ -158,12 +158,12 @@ export const verifyUser = async (
     // Update user verification status
     await User.update(
       {
-       verify: true
+        verify: true,
       },
       {
-        where: { id: id }
+        where: { id: id },
       }
-    )
+    );
 
     return res.status(200).json({
       msg: "User verified",
@@ -201,7 +201,6 @@ export const loginUser = async (
         .status(404)
         .json({ message: `User does not exist, please register` });
     }
-    
     if (user && user.verify === true) {
       const validate = await bcrypt.compare(password, user.password);
 
@@ -212,13 +211,15 @@ export const loginUser = async (
           { expiresIn: "1d" }
         );
 
-       
+        console.log("hello");
         return res.status(200).json({
           message: `Login successfully`,
           email: user.email,
           token,
           role: user.role,
-          id: user.id
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName
         });
       }
 
@@ -287,14 +288,13 @@ export const verifyChangePasswordEmail = async (
 ) => {
   try {
     const { email } = req.body;
-    
 
     // Find user based on email
     const user = await User.findOne({ where: { email } });
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-  
 
     // Generate a random four-digit OTP
     // const otp = resetPasswordOTP(); // You need to implement this function
@@ -302,13 +302,9 @@ export const verifyChangePasswordEmail = async (
     // Generate token for the user (assuming generateToken is asynchronous)
     const otp = await generateOTP(); // Get plain object of the user from the query result
 
-//     const token = tokenGenerator(user);
 
 const token = jwt.sign({ email: user.email, id: user.id }, process.env.APP_SECRET!, {
      expiresIn: '1d'})
-
-
-    
 
 
     // Compose mail
@@ -346,11 +342,9 @@ export const verifyChangePasswordOTP = async (
   //if(otp === user.otp) => otp correct
   try {
     const { otp } = req.body;
-    
     const id = req.params.id;
     const user = await User.findOne({ where: { id } });
-    
-    if (!user ) {
+    if (!user || !("otp" in user)) {
       return res.status(404).json({ message: "Invalid OTP" });
     }
 
@@ -364,8 +358,6 @@ export const verifyChangePasswordOTP = async (
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
-
 
 export const verifyChangePassword = async (
   req: Request,
@@ -471,13 +463,13 @@ export const createAdmin = async (
       imageUrl: "",
       notification: "",
       accountBalance: 0,
-      phoneNumber:'',
+      phoneNumber: "",
       role: "admin",
       verify: true,
-      address: "", 
-      zipCode: "", 
+      address: "",
+      zipCode: "",
       city: "",
-      state:"",
+      state: "",
       country: "",
     })) as unknown as IUSER;
 
@@ -496,104 +488,124 @@ export const createAdmin = async (
     return res.status(500).json({ error: "Internal server error" });
   }
 };
-// 
+//
 
-export const updateUserProfile = async(req: Request, res: Response, next: NextFunction) => { 
+export const updateUserProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-     
-  
-     
-  let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
+    let {
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      address,
+      zipCode,
+      city,
+      state,
+      country,
+    } = req.body;
 
+    console.log(
+      "image live   ",
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      address,
+      zipCode,
+      city,
+      state,
+      country
+    );
 
-    console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
+    const updateField: Partial<IUSER> = {};
 
-  const updateField: Partial<IUSER> = {}
+    if (!firstName) {
+      updateField.firstName = firstName;
+    }
+    if (!lastName) {
+      updateField.lastName = lastName;
+    }
+    if (!email) {
+      updateField.email = email;
+    }
+    if (!phoneNumber) {
+      updateField.phoneNumber = phoneNumber;
+    }
 
-  if(!firstName){
-      updateField.firstName = firstName
-  }
-  if(!lastName){
-      updateField.lastName = lastName
-  }
-  if(!email){
-      updateField. email =  email
-  }
-  if(!phoneNumber){
-      updateField. phoneNumber =  phoneNumber
-  }
+    // if(!imageUrl){
+    //     updateField.imageUrl =  req.file
+    // }
 
-  // if(!imageUrl){
-  //     updateField.imageUrl =  req.file
-  // }
+    if (!address) {
+      updateField.address = address;
+    }
+    if (!zipCode) {
+      updateField.zipCode = zipCode;
+    }
+    if (!city) {
+      updateField.city = city;
+    }
+    if (!state) {
+      updateField.state = state;
+    }
+    if (!country) {
+      updateField.country = country;
+    }
 
-  if(!address){
-      updateField. address =  address
-  }
-  if(!zipCode){
-      updateField. zipCode =  zipCode
-  }
-  if(!city){
-      updateField. city =  city
-  }
-  if(!state){
-      updateField. state =  state
-  }
-  if(!country){
-      updateField. country =  country
-  }
+    const updatedUser = (await User.update(updateField, {
+      where: { email: email },
+    })) as unknown as IUSER;
 
-  const updatedUser = await User.update(updateField,  {where: {email: email }} ) as unknown as IUSER
+    if (updatedUser) {
+      return res.status(200).json({
+        message: `User updated successfully`,
+        data: updatedUser,
+      });
+    }
 
-     if (updatedUser) {
-        return res.status(200).json({
-           message: `User updated successfully`,
-           data: updatedUser
-        });
-     }
-
-     return res.status(401).json({
-        message: `Update operation failed`
-     });
+    return res.status(401).json({
+      message: `Update operation failed`,
+    });
   } catch (error: any) {
-     console.log(error.message);
-     return res.status(500).json({ message: 'Internal server error' });
+    console.log(error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
+export const createUserImage = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
 
+    console.log("email ", email);
 
-export const createUserImage = async (req: Request, res: Response) =>{
-  try{
+    const user = (await User.findOne({
+      where: { email: email },
+    })) as unknown as IUSER;
 
-      const {email} = req.body
+    const updateField: Partial<IUSER> = {};
 
-  console.log("email ",email)
+    const updateUserImage = (await User.update(
+      { imageUrl: req.file?.path },
+      { where: { email: email } }
+    )) as unknown as IUSER;
 
-  const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
-
-  const updateField: Partial<IUSER> = {}
-
-
-  const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
-
-  if (updateUserImage) {
+    if (updateUserImage) {
       return res.status(200).json({
-         message: `User updated successfully`,
-         data: updateUserImage
+        message: `User updated successfully`,
+        data: updateUserImage,
       });
-   }
+    }
 
-   return res.status(401).json({
-      message: `Update operation failed`
-   });
-
-  }catch(error){
-      return res.status(500).json({
-          message: `Error Uploading Imsge`
-       });
+    return res.status(401).json({
+      message: `Update operation failed`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: `Error Uploading Imsge`,
+    });
   }
-
-}
-
-
+};
