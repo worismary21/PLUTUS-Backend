@@ -8,4 +8,3 @@ const router = Router();
 router.get("/get", companyAuth, getInvestor);
 
 export default router;
-

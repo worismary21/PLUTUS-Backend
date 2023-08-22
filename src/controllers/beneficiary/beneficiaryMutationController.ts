@@ -11,7 +11,6 @@ export const createBeneficiaries = async (
     NextFunction: NextFunction
   ) => {
   try {
-      
     const schema = createBeneficiary
     const { error, value } = schema.validate(req.body);
     if (error) {
@@ -22,9 +21,8 @@ export const createBeneficiaries = async (
      const token_info = token.split(" ")[1];
      const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
  
-    const user_id = decodedToken.id;
-      
-     const { beneficiaryName, accountNumber, beneficiaryType } = req.body;
+     const user_id = decodedToken.id;
+     const { beneficiaryName, accountNumber } = req.body;
   
       const user = await User.findOne({ where: { id: user_id } });
   

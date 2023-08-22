@@ -6,9 +6,9 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 
 import Company from "../../model/company";
-import investment_Records from '../../model/investmentRecord'
+import investment_Records from '../../model/investmentRecord';
 import Investor from "../../model/investor";
-import { transfer_Beneficiary } from '../../utils/inputvalidation'
+import { transfer_Beneficiary, transfer_InvestmentCompany, transferToSavings_Wallet } from '../../utils/inputvalidation';
 
 
 dotenv.config();
@@ -19,7 +19,7 @@ export const transferToBeneficiary = async (
   NextFunction: NextFunction
 ) => {
   try {
-    const schema = transfer_Beneficiary
+    const schema = transfer_Beneficiary;
     const { error, value } = schema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
@@ -54,106 +54,106 @@ export const transferToBeneficiary = async (
         const sender_AccountBalance = sender_accountDetails.accountBalance;
         const sender_accountNumber = sender_accountDetails.accountNumber;
 
-        if ( +sender_accountNumber !== +beneficiary_AccountNumber && +beneficiary_AccountNumber === +accountNumber) {
+        if (+sender_accountNumber !== +beneficiary_AccountNumber && +beneficiary_AccountNumber === +accountNumber) {
           if (sender_AccountBalance > amount) {
-    
-              const beneficiary_old_Account_Balance = validated_Beneficiary.accountBalance;
-              const beneficiary_new_AccountBalance = amount + beneficiary_old_Account_Balance;
 
-              const fulfilled_transaction = await User.update(
-                { accountBalance: beneficiary_new_AccountBalance },
-                {
-                  where: {
-                    accountNumber: beneficiary_AccountNumber,
-                  },
-                }
-              );
+            const beneficiary_old_Account_Balance = validated_Beneficiary.accountBalance;
+            const beneficiary_new_AccountBalance = amount + beneficiary_old_Account_Balance;
 
-              const sender_old_Account_Balance = sender_AccountBalance;
-              const sender_new_Account_Balance = sender_old_Account_Balance - amount;
+            const fulfilled_transaction = await User.update(
+              { accountBalance: beneficiary_new_AccountBalance },
+              {
+                where: {
+                  accountNumber: beneficiary_AccountNumber,
+                },
+              }
+            );
 
-              const user_Transaction_Status = await User.update(
-                { accountBalance: sender_new_Account_Balance },
-                {
-                  where: {
-                    accountNumber: sender_accountNumber,
-                  },
-                }
-              );
+            const sender_old_Account_Balance = sender_AccountBalance;
+            const sender_new_Account_Balance = sender_old_Account_Balance - amount;
 
-                const beneficiary_AccNumber = beneficiary_AccountNumber;
+            const user_Transaction_Status = await User.update(
+              { accountBalance: sender_new_Account_Balance },
+              {
+                where: {
+                  accountNumber: sender_accountNumber,
+                },
+              }
+            );
 
-                const expected_beneficiary_balance: any = await User.findOne({
-                  where: { accountNumber: beneficiary_AccNumber },
+            const beneficiary_AccNumber = beneficiary_AccountNumber;
+
+            const expected_beneficiary_balance: any = await User.findOne({
+              where: { accountNumber: beneficiary_AccNumber },
+            });
+            const expected_beneficiary_AccountBalance = expected_beneficiary_balance.accountBalance;
+
+            if (beneficiary_new_AccountBalance !== expected_beneficiary_AccountBalance) {
+
+              const update_beneficiary_accountBalance = await User.update({ accountBalance: beneficiary_old_Account_Balance }, { where: { accountNumber: beneficiary_AccNumber } });
+              const update_sender_accountBalance = await User.update({ accountBalance: sender_old_Account_Balance }, { where: { accountNumber: sender_accountNumber } });
+
+              if (update_beneficiary_accountBalance && update_sender_accountBalance) {
+                const pending_transfer = await Transfers.create({
+                  id: v4(),
+                  accountNumber,
+                  amount,
+                  transfer_purpose,
+                  beneficiary_name,
+                  beneficiary_email,
+                  payer_reference,
+                  information_for_beneficiary,
+                  status: "PENDING",
+                  senderId: sender_id,
                 });
-                const expected_beneficiary_AccountBalance = expected_beneficiary_balance.accountBalance
 
-                if (beneficiary_new_AccountBalance !== expected_beneficiary_AccountBalance) {
+                return res.status(400).json({
+                  message: "Transaction PENDING. Please wait for few minutes before trying again.",
+                  data: pending_transfer
+                });
+              } else {
+                return res.status(400).json({
+                  message: `PENDING TRANSACTION. Please contact customer service or go to the nearest plutus branch.`
+                });
+              }
+            } else {
+              if (fulfilled_transaction && user_Transaction_Status) {
+                const sucessful_transfer = await Transfers.create({
+                  id: v4(),
+                  accountNumber,
+                  amount,
+                  transfer_purpose,
+                  beneficiary_name,
+                  beneficiary_email,
+                  payer_reference,
+                  information_for_beneficiary,
+                  status: "SUCCESSFUL",
+                  senderId: sender_id,
+                });
+                return res.status(200).json({
+                  message: "Transaction Successful",
+                  data: sucessful_transfer
+                });
+              } else {
+                const failed_transfer = await Transfers.create({
+                  id: v4(),
+                  accountNumber,
+                  amount,
+                  transfer_purpose,
+                  beneficiary_name,
+                  beneficiary_email,
+                  payer_reference,
+                  information_for_beneficiary,
+                  status: "FAILED",
+                  senderId: sender_id,
+                });
+                return res.status(400).json({
+                  message: "Transaction Failed",
+                  data: failed_transfer
+                });
+              }
+            }
 
-                  const update_beneficiary_accountBalance = await User.update({ accountBalance: beneficiary_old_Account_Balance }, { where: {accountNumber: beneficiary_AccNumber}})
-                  const update_sender_accountBalance = await User.update({ accountBalance: sender_old_Account_Balance }, { where: {accountNumber: sender_accountNumber}})
-
-                  if(update_beneficiary_accountBalance && update_sender_accountBalance){
-                    const pending_transfer = await Transfers.create({
-                      id: v4(),
-                      accountNumber,
-                      amount,
-                      transfer_purpose,
-                      beneficiary_name,
-                      beneficiary_email,
-                      payer_reference,
-                      information_for_beneficiary,
-                      status: "PENDING",
-                      senderId: sender_id,
-                    });
-  
-                    return res.status(400).json({
-                      message: "Transaction PENDING. Please wait for few minutes before trying again.",
-                      data: pending_transfer 
-                    });
-                  }else{
-                    return res.status(400).json({
-                      message: `PENDING TRANSACTION. Please contact customer service or go to the nearest plutus branch.`
-                    })
-                  }
-                }else{
-                    if (fulfilled_transaction && user_Transaction_Status ){
-                      const sucessful_transfer = await Transfers.create({
-                        id: v4(),
-                        accountNumber,
-                        amount,
-                        transfer_purpose,
-                        beneficiary_name,
-                        beneficiary_email,
-                        payer_reference,
-                        information_for_beneficiary,
-                        status: "SUCCESSFUL",
-                        senderId: sender_id,
-                      });
-                      return res.status(200).json({
-                        message: "Transaction Successful",
-                        data: sucessful_transfer
-                      });
-                    } else {
-                      const failed_transfer = await Transfers.create({
-                        id: v4(),
-                        accountNumber,
-                        amount,
-                        transfer_purpose,
-                        beneficiary_name,
-                        beneficiary_email,
-                        payer_reference,
-                        information_for_beneficiary,
-                        status: "FAILED",
-                        senderId: sender_id,
-                      });
-                      return res.status(400).json({
-                        message: "Transaction Failed",
-                        data: failed_transfer
-                      });
-                    }
-                  }   
-                
           } else {
             return res.status(400).json({
               message: "Insufficient Funds",
@@ -190,7 +190,11 @@ export const transferToSavingsWallet = async (
   NextFunction: NextFunction
 ) => {
   try {
-
+    const schema = transferToSavings_Wallet;
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
     const token: any = req.headers.authorization;
     const token_info = token.split(" ")[1];
     const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
@@ -198,53 +202,53 @@ export const transferToSavingsWallet = async (
     if (decodedToken.email) {
       const { amount } = req.body;
 
-      const user_id = decodedToken.id
-      const user_info:any = await User.findOne({ where: { id: user_id}})
+      const user_id = decodedToken.id;
+      const user_info: any = await User.findOne({ where: { id: user_id } });
 
-      const user_savings_balance = user_info.savingsWallet
-      const user_balance_amount = user_savings_balance.amount
-      const user_accountBalance = user_info.accountBalance
+      const user_savings_balance = user_info.savingsWallet;
+      const user_balance_amount = user_savings_balance.amount;
+      const user_accountBalance = user_info.accountBalance;
 
-      if(amount < user_accountBalance){
+      if (amount < user_accountBalance) {
 
-      const new_Savings_Balance = user_balance_amount + amount
+        const new_Savings_Balance = user_balance_amount + amount;
 
-      const savings_wallet_obj = { id: user_id, amount:new_Savings_Balance }
-  
-      const current_savings_balance = await User.update(
-        { savingsWallet: savings_wallet_obj },
-        {
-          where: {
-            id: user_id 
-          },
+        const savings_wallet_obj = { id: user_id, amount: new_Savings_Balance };
+
+        const current_savings_balance = await User.update(
+          { savingsWallet: savings_wallet_obj },
+          {
+            where: {
+              id: user_id
+            },
+          }
+        );
+
+        const user_new_balance = user_accountBalance - amount;
+
+        const updating_user_balance = await User.update(
+          { accountBalance: user_new_balance },
+          {
+            where: {
+              id: user_id
+            },
+          }
+        );
+
+        if (current_savings_balance && updating_user_balance) {
+          return res.status(200).json({
+            message: "Amount Transferred to Savings Wallet"
+          });
+        } else {
+          return res.status(400).json({
+            message: "Transfer PENDING!! Please wait a few minutes or contact customer service. "
+          });
         }
-      );
 
-     const user_new_balance = user_accountBalance - amount
-
-      const updating_user_balance = await User.update(
-        { accountBalance: user_new_balance },
-        {
-          where: {
-            id: user_id
-          },
-        }
-      );
-  
-      if(current_savings_balance && updating_user_balance){
-        return res.status(200).json({
-          message: "Amount Transferred to Savings Wallet"
-        })
-      }else{
-        return res.status(400).json({
-          message: "Transfer PENDING!! Please wait a few minutes or contact customer service. "
-        })
-      }
-
-      }else{
+      } else {
         return res.status(400).json({
           message: "You do not have sufficient balance to execute this savings transfer"
-        })
+        });
       }
     }
   } catch (error) {
@@ -259,22 +263,27 @@ export const transferToInvestmentCompany = async (
   next: NextFunction
 ) => {
   try {
+    const schema = transfer_InvestmentCompany
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
     const token: any = req.headers.authorization;
     const token_info = token.split(" ")[1];
     const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
 
     if (decodedToken.email) {
-      const user_id = decodedToken.id
-      const {amount, company_account_number} = req.body
+      const user_id = decodedToken.id;
+      const { amount, company_account_number } = req.body;
 
-      const user_details:any = await User.findOne({where: {id:user_id}})
-      const user_account_balance = user_details.accountBalance
-      const user_account_number = user_details.accountNumber
-      const user_firstName = user_details.firstName
-      const user_lastName = user_details.lastName
+      const user_details: any = await User.findOne({ where: { id: user_id } });
+      const user_account_balance = user_details.accountBalance;
+      const user_account_number = user_details.accountNumber;
+      const user_firstName = user_details.firstName;
+      const user_lastName = user_details.lastName;
 
-      if( user_account_balance > amount){
-        const user_new_balance = user_account_balance - amount
+      if (user_account_balance > amount) {
+        const user_new_balance = user_account_balance - amount;
         const investment_Transfer = await User.update(
           { accountBalance: user_new_balance },
           {
@@ -284,13 +293,13 @@ export const transferToInvestmentCompany = async (
           }
         );
 
-        const company_details:any = await Company.findOne({where: { accountNumber: company_account_number }})
-        if(company_details.accountNumber){
+        const company_details: any = await Company.findOne({ where: { accountNumber: company_account_number } });
+        if (company_details.accountNumber) {
 
-          const company_id = company_details.id
-          const company_account_balance = company_details.wallet
-          const comapany_wallet_balance = amount + company_account_balance
-  
+          const company_id = company_details.id;
+          const company_account_balance = company_details.wallet;
+          const comapany_wallet_balance = amount + company_account_balance;
+
           const successful_Transfer = await Company.update(
             { wallet: comapany_wallet_balance },
             {
@@ -299,15 +308,15 @@ export const transferToInvestmentCompany = async (
               },
             }
           );
-          
+
           const company_dets: any = await Company.findOne({
             where: { accountNumber: company_account_number },
           });
-  
-          const current_wallet_balance = company_dets.wallet
-          const expected_company_balance = comapany_wallet_balance
-  
-          if( current_wallet_balance !== expected_company_balance ){
+
+          const current_wallet_balance = company_dets.wallet;
+          const expected_company_balance = comapany_wallet_balance;
+
+          if (current_wallet_balance !== expected_company_balance) {
 
             const update_company_balance = await Company.update(
               { wallet: company_account_balance },
@@ -327,7 +336,7 @@ export const transferToInvestmentCompany = async (
               }
             );
 
-            if(update_company_balance && update_user_balance){
+            if (update_company_balance && update_user_balance) {
               const pending_transaction_record = await investment_Records.create({
                 id: v4(),
                 amount: amount,
@@ -335,18 +344,18 @@ export const transferToInvestmentCompany = async (
                 investor_id: user_id,
                 investment_company_id: company_id,
                 transaction_status: "PENDING"
-              })
+              });
               return res.status(400).json({
                 message: `Transfer PENDING.`,
-                data: pending_transaction_record 
-              })
-            }else{
+                data: pending_transaction_record
+              });
+            } else {
               return res.status(400).json({
                 message: `Please wait and try for a few minutes before trying again or contact Customer Service.`
-              })
+              });
             }
-          }else{
-            if( investment_Transfer && successful_Transfer){
+          } else {
+            if (investment_Transfer && successful_Transfer) {
               const sucessful_transaction_record = await investment_Records.create({
                 id: v4(),
                 amount: amount,
@@ -354,42 +363,44 @@ export const transferToInvestmentCompany = async (
                 investor_id: user_id,
                 investment_company_id: company_id,
                 transaction_status: "SUCCESSFUL",
-              })
+              });
 
-              const investment_duration = company_dets.duration
-              const company_roi = company_dets.roi
-              const expected_return_amount = amount * company_roi
-              const expected_monthly_return = expected_return_amount/investment_duration
-              
+              const investment_duration = company_dets.duration;
+              const company_roi = company_dets.roi;
+              const expected_return_amount: any = (amount * company_roi).toFixed(2);
+              const expected_monthly_return: any = (expected_return_amount / investment_duration).toFixed(2);
 
-             await Investor.create({
-                id:v4(),
-                firstName:user_details.firstName,
-                lastName:user_details.lastName,
-                accountNumber:user_details.accountNumber,
-                email:user_details.email,
-                investedCapital:amount,
-                expectedReturn:expected_return_amount,
-                monthlyReturn:expected_monthly_return,
+              await Investor.create({
+                id: v4(),
+                firstName: user_details.firstName,
+                lastName: user_details.lastName,
+                accountNumber: user_details.accountNumber,
+                email: user_details.email,
+                investedCapital: amount,
+                expectedReturn: expected_return_amount,
+                monthlyReturn: expected_monthly_return,
+                returnOnInvestment: company_roi,
                 active: true,
-                companyId:company_id
-              })
+                companyId: company_id,
+                companyName: ""
 
-                const investor_count = company_dets.noOfInvestors + 1
-                     await Company.update(
-                  { noOfInvestors: investor_count },
-                  {
-                    where: {
-                      accountNumber: company_account_number,
-                    },
-                  }
-                );
+              });
+
+              const investor_count = company_dets.noOfInvestors + 1;
+              await Company.update(
+                { noOfInvestors: investor_count },
+                {
+                  where: {
+                    accountNumber: company_account_number,
+                  },
+                }
+              );
 
               return res.status(200).json({
                 message: `Transfer SUCCESSFUL!!`,
                 data: sucessful_transaction_record
-              })
-            }else{
+              });
+            } else {
               const failed_transaction_record = await investment_Records.create({
                 id: v4(),
                 amount: amount,
@@ -397,22 +408,22 @@ export const transferToInvestmentCompany = async (
                 investor_id: user_id,
                 investment_company_id: company_id,
                 transaction_status: "FAILED"
-              })
+              });
               return res.status(400).json({
                 message: `Transfer FAILED.`,
                 data: failed_transaction_record
-              })        
+              });
             }
           }
-        }else{
+        } else {
           return res.status(400).json({
             message: `Company does not exist. Please check if account number is correct`
-          })
+          });
         }
-      }else{
+      } else {
         return res.status(400).json({
           message: `Sorry! You do not have sufficient funds to make this investment. Please credit your account`
-        })
+        });
       }
     }
   } catch (error) {
