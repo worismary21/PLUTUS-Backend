@@ -70,8 +70,10 @@ export const getUsersInfo = async(req:Request, res:Response) => {
                         "account_balance": user_account_Balance,
                         "savings_wallet": user_account_Savings_Wallet_Balance,
                         "transactions_history": user_transactions,
-                        "beneficiary": user_beneficiary
-                    }
+                          "beneficiary": user_beneficiary,
+                          user:user_info
+                     },
+                     
                 })
             }else{
                 res.status(400).json({
