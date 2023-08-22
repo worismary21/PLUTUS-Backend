@@ -171,40 +171,7 @@ export const loginUser = async (
       return res
         .status(404)
         .json({ message: `User does not exist, please register` });
-      const user:any = await Company.findOne({ where: { email } }) as unknown as IUSER;
-
-      if (user && user.verified === true) {
-        const validate = await bcrypt.compare(password, user.password);
-
-        if (validate) {
-          const token = jwt.sign(
-            { email: user.email, id: user.id },
-            process.env.APP_SECRET!,
-            { expiresIn: "1d" }
-          );
-
-          return res.status(200).json({
-            message: `Login successfully`,
-            email: user.email,
-            user_token: token,
-            role: user.role,
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName
-          });
-        } else {
-          res.status(400).json({
-            message: `Password is incorrect. Please check password details and try again.`,
-          });
-        }
-      } else {
-        return res.status(400).json({
-          message: `Company Not Verified`,
-        });
-      }
-      return res
-        .status(404)
-        .json({ message: `Company does not exist, please register` });
+     
     } else {
       if (user && user.verify === true) {
         const validate = await bcrypt.compare(password, user.password);
