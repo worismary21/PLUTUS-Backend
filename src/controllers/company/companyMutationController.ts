@@ -5,7 +5,7 @@ import { v4 } from "uuid";
 import { hashedPassword } from "../../utils/auth";
 import { generateOTP } from "../../utils/auth";
 import { sendmail, emailHtmlForCompany } from "../../utils/notifications";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import { companyAccount } from "../../utils/auth";
 import Joi from "joi";
@@ -245,19 +245,19 @@ export const createCompany = async (
     }
   };
 
-  export const createCompanyImage = async (req: Request, res: Response) =>{
+  export const createCompanyImage = async (req: JwtPayload, res: Response) =>{
     try{
   
-        const {email} = req.body
+        const {id} = req.user
   
-    console.log("email ",email)
+
   
-    const user = await Company.findOne({where: {email: email }} ) as unknown as ICOMPANY
+    const user = await Company.findOne({where: {id:id }} ) as unknown as ICOMPANY
   
     const updateField: Partial<ICOMPANY> = {}
   
   
-    const updateUserImage = await Company.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as ICOMPANY
+    const updateUserImage = await Company.update({ imageUrl : req.file?.path },  {where: { id:id}} ) as unknown as ICOMPANY
   
     if (updateUserImage) {
         return res.status(200).json({
