@@ -9,7 +9,15 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import Joi from "joi";
 import bcrypt from "bcrypt";
-import { signUpUser } from '../../utils/inputvalidation'
+import {
+  signUpUser,
+  clientLogin,
+  userProfileUpdate,
+  forgot_password,
+  verifyChangePassword_Email,
+  createUser_Image,
+  verifyChange_Password
+} from '../../utils/inputvalidation';
 import Company from "../../model/company";
 
 dotenv.config();
@@ -152,10 +160,7 @@ export const loginUser = async (
   next: NextFunction
 ) => {
   try {
-    const schema = Joi.object({
-      email: Joi.string().email().required(),
-      password: Joi.string().required(),
-    });
+    const schema = clientLogin
     const { error, value } = schema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
@@ -285,8 +290,12 @@ export const verifyChangePasswordEmail = async (
   next: NextFunction
 ) => {
   try {
+    const schema = verifyChangePassword_Email
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
     const { email } = req.body;
-
     // Find user based on email
     const user = await User.findOne({ where: { email } });
 
@@ -360,6 +369,12 @@ export const verifyChangePassword = async (
   next: NextFunction
 ) => {
   try {
+
+    const schema = verifyChange_Password
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
     const userid = req.params.id;
     const { oldPassword, newPassword, confirm_password } = req.body;
 
@@ -418,6 +433,11 @@ export const updateUserProfile = async (
   next: NextFunction
 ) => {
   try {
+    const schema = userProfileUpdate
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
       let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
         console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
         // console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
@@ -470,8 +490,12 @@ export const updateUserProfile = async (
 
 export const createUserImage = async (req: Request, res: Response) => {
   try {
-          const {email} = req.body
-      console.log("email ",email)
+    const schema = createUser_Image
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+      const {email} = req.body
       const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
       const updateField: Partial<IUSER> = {}
       const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
@@ -496,8 +520,13 @@ export const forgotPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email } = req.body;
   try {
+    const schema = forgot_password
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    const { email } = req.body;
     const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
     if (!user) {
       return res.status(400).json({ error: "User does not exist!" });

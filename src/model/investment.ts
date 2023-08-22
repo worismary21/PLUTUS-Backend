@@ -13,7 +13,7 @@ export interface InvestmentAttributes {
   companyName: string;
   investment_category: string;
   investment_description: string;
-  rateOfReturn: number;
+  returnOnInvestment: number;
   duration: Duration;
   min_investment_amount: number;
   max_investment_amount: number;
@@ -50,7 +50,7 @@ Investment.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    rateOfReturn: {
+    returnOnInvestment: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },

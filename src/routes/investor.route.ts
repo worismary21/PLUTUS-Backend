@@ -4,7 +4,7 @@ import { auth, companyAuth } from "../middleware/auth";
 import {
   getInvestment,
   //   getTotalInvestment,
-} from "../controllers/investorController";
+} from "../controllers/client/clientQueryController";
 import { getInvestor } from '../controllers/company/companyQueryController';
 
 const router = Router();
