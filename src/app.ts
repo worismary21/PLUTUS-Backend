@@ -30,16 +30,24 @@ app.use("/company", companyRoute);
 app.use("/transactions", transactionRoute);
 app.use("/transaction", transaction);
 
-app.get("/", (req, res) => {
-  return res.send("Hello World!");
+
+app.get('/', (req, res) => {
+    return res.send('Hello World!')
+    }
+)
+
+db.sync().then(() => {
+    console.log('Database is connected');
+    }).catch((err:HttpError) => {
+    console.log(err);
 });
 
 
-// db.sync({force:true}).then(() => {
-//     console.log('Database is connected');
-//     }).catch((err:HttpError) => {
-//     console.log(err);
-// });
+db.sync({alter:true}).then(() => {
+    console.log('Database is connected');
+    }).catch((err:HttpError) => {
+    console.log(err);
+});
 
 
 db.sync()
