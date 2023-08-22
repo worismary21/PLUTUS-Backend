@@ -10,4 +10,4 @@ export default {
 }
 
 
-console.log("running in productionx mode")
+console.log("running in production mode")

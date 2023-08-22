@@ -1,5 +1,6 @@
 import express from 'express';
-import { getAllTransactions, getUserDetails, getAllExpenses, getAllIncome} from "../controllers/transactions";
+import { getUserDetails, getAllExpenses, getAllIncome} from "../controllers/client/clientQueryController";
+import { getAllTransactions } from '../controllers/admin/adminQueryController'
 import { auth } from '../middleware/auth';
 const router = express.Router();
 

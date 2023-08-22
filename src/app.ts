@@ -9,6 +9,7 @@ import transferRoute from './routes/transfer.route'
 import transactions from './routes/transaction.route';
 import companyRoute from './routes/company.route'
 import transaction from './routes/transfer.route';
+import transactionRoute from './routes/transaction.route'
 import investorRoute from './routes/investor.route';
 import cors from 'cors';
 import logger from "morgan"
@@ -28,7 +29,7 @@ app.use('/investor', investorRoute)
 app.use('/beneficiary', beneficiaryRoute)
 app.use('/transfer', transferRoute)
 app.use('/company', companyRoute)
-app.use('/transactions', transactions)
+app.use('/transactions', transactionRoute)
 
 
 app.get('/', (req, res) => {
@@ -36,11 +37,11 @@ app.get('/', (req, res) => {
     }
 )
 
-db.sync({}).then(() => {
-    console.log('Database is connected');
-    }).catch((err:HttpError) => {
-    console.log(err);
-});
+// db.sync({force:true}).then(() => {
+//     console.log('Database is connected');
+//     }).catch((err:HttpError) => {
+//     console.log(err);
+// });
 
 // {force:true}
 
