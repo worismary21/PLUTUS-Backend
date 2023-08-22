@@ -194,7 +194,6 @@ export const loginUser = async (
     }
 
     const { email, password } = req.body;
-
     const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
 
     if (!user) {
@@ -202,7 +201,6 @@ export const loginUser = async (
         .status(404)
         .json({ message: `User does not exist, please register` });
     }
-
     if (user && user.verify === true) {
       const validate = await bcrypt.compare(password, user.password);
 
@@ -219,6 +217,9 @@ export const loginUser = async (
           email: user.email,
           token,
           role: user.role,
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName
         });
       }
 
@@ -229,9 +230,9 @@ export const loginUser = async (
       }
     }
 
-    // return res.status(401).json({
-    //   message: `User Not Verified`,
-    // });
+    return res.status(400).json({
+      message: `User Not Verified`,
+    });
   } catch (err) {
     return res.status(500).json({
       message: `Internal Server Error`,
@@ -301,7 +302,10 @@ export const verifyChangePasswordEmail = async (
     // Generate token for the user (assuming generateToken is asynchronous)
     const otp = await generateOTP(); // Get plain object of the user from the query result
 
-    const token = tokenGenerator(user);
+
+const token = jwt.sign({ email: user.email, id: user.id }, process.env.APP_SECRET!, {
+     expiresIn: '1d'})
+
 
     // Compose mail
     const mailOptions = {

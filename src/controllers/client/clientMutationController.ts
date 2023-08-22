@@ -151,8 +151,6 @@ export const verifyUser = async (
     });
   }
 };
-
-
 //Controller for logging-in user
 export const loginUser = async (
   req: Request,
@@ -219,10 +217,14 @@ export const loginUser = async (
           );
 
           return res.status(200).json({
-            message: `Login successfully`,
-            email: user.email,
-            user_token: token,
-            role: user.role,
+               message: `Login successfully`,
+               email: user.email,
+               user_token: token,
+               role: user.role,
+               verify: user.verify,
+               id: user.id,
+               firstName: user.firstName,
+               lastName: user.lastName
           });
         } else {
           res.status(400).json({
