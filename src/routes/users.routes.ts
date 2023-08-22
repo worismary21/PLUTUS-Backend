@@ -32,7 +32,7 @@ router.put('/change-password-otp/:id', verifyChangePasswordOTP)
 router.put('/change-password/:id', verifyChangePassword);
 router.put('/updateaccount', updateUserProfile);
 
-router.put('/profileimage', upload.single('image'), createUserImage)
+router.put('/profileimage', auth, upload.single('image'), createUserImage)
 router.post("/company", isAdmin, createCompany);
 
 router.get("/get", getUsersByAdmin);
