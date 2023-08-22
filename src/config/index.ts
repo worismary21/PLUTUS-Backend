@@ -12,14 +12,14 @@ export const db = new Sequelize(
   
     {
       host: DB_HOST,
-      port: 5500,
+      port: 5432,
       dialect: "postgres",
       logging: false,
       dialectOptions: {
         encrypt: true,
-        ssl: {
-          rejectUnauthorized: true,
-        },
+        // ssl: {
+        //   rejectUnauthorized: true,
+        // },
       },
     },
   
