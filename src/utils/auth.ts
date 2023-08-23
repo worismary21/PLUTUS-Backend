@@ -44,7 +44,8 @@ export const verifyToken = (token:any)=>{
 
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) =>{
   const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
+  console.log(token)
+    if (!token || token === undefined) {
       throw new Error('No token provided');
     }
   const decodedToken = jwt.verify(token, process.env.APP_SECRET!) as JwtPayload;

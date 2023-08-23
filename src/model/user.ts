@@ -1,12 +1,11 @@
-import { DataTypes, Model, Sequelize } from "sequelize"
-import { db } from "../config"
-import Company from "./company"
-
+import { DataTypes, Model, Sequelize } from "sequelize";
+import { db } from "../config";
+import Company from "./company";
 
 type Saving = {
-    id:string,
-    amount:number,
-}
+  id: string;
+  amount: number;
+};
 
 export type IUSER = {
     id:string,
@@ -31,7 +30,11 @@ export type IUSER = {
     country: string
 }
 
-class User extends Model<IUSER>{}
+class User extends Model<IUSER>{
+     email: any
+     id: any
+     otp: any
+}
 
 User.init({
     id:{

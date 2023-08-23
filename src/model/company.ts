@@ -22,6 +22,13 @@ export type ICOMPANY = {
   duration: number;
   min_investment_amount: number;
   max_investment_amount: number;
+  imageUrl:string;
+  phoneNumber:string;
+  address:string;
+  zipCode:string;
+  city:string;
+  state:string;
+  country:string
 };
 
 class Company extends Model<ICOMPANY> {
@@ -101,7 +108,7 @@ Company.init(
       allowNull: false,
     },
     duration: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     min_investment_amount: {
@@ -111,6 +118,34 @@ Company.init(
     max_investment_amount: {
       type: DataTypes.FLOAT,
       allowNull: false,
+    },
+    imageUrl:{
+      type:DataTypes.STRING,
+      allowNull:true
+  },
+  phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  zipCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  state: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  country: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

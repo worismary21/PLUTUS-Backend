@@ -49,19 +49,25 @@ export const sendmailForInvestment = async(from:string, to:string, subject:strin
 }
 
 export const emailHtml = (email:string, OTP:string)=>{
-    const mail = `<h1>PLUTUS<h1><br>
-                    <p>Welcome to Plutus. We're thrilled to have you join our thriving community. To access our private content, we need you to quickly verify your plutus account with email address- ${email}. Use the otp below to verify on the Plutus web app.</p><br>
-                    <p>OTP - ${OTP}</p>
-                    <p>Note: Do not forward or give this code to anyone</p>
-                    <p>Thank You</p>
-                    <p>Best Regards,</p>
-                    <p>From </P>
-                    <P>Team Plutus</p>`
+    const mail = `<h1>Welcome to Plutus<h1>
+                    <p>You username: ${email}</p><br>
+                    <p>Your OTP: ${OTP}</p><br>
+                    <p>Thank You</p>`
 
                     return mail
 }
 
-export const emailHtmlForCompany = (companyName:string, email:string, password:string)=>{
+export const emailHtmlForAdmin = (email:string, OTP:string)=>{
+    const mail = `<h3>Dear Admin User,<h3><br>
+                    <p>Please use these details too verify your account.</p>
+                    <p>You username: ${email}</p><br>
+                    <p>Your OTP: ${OTP}</p><br>
+                    <p>Thank You</p>`
+                    return mail
+}
+
+
+export const emailHtmlForCompany = (companyName:string, email:string, password:string,)=>{
     const mail = `<h1>Welcome to Plutus<h1>
                     <p>Hello ${companyName},</p><br>
                     <p> Thank you for registering your company with Plutus. Here you have access to attract a lot of investors to your company and scale your business so high.</p>
