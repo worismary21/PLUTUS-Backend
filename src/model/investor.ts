@@ -16,7 +16,7 @@ export type INVESTOR = {
   investedCapital: number;
   expectedReturn: number;
   monthlyReturn: number;
-  rateOfReturn: number;
+  returnOnInvestment: number;
   active: boolean;
   companyId: string;
   companyName: string;
@@ -70,7 +70,7 @@ Investor.init(
       type: DataTypes.FLOAT,
       allowNull: true,
     },
-    rateOfReturn: {
+    returnOnInvestment: {
       type: DataTypes.FLOAT,
       allowNull: true,
     },

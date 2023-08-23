@@ -30,7 +30,11 @@ export type IUSER = {
     country: string
 }
 
-class User extends Model<IUSER> {}
+class User extends Model<IUSER>{
+     email: any
+     id: any
+     otp: any
+}
 
 User.init(
   {

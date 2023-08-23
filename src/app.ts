@@ -42,6 +42,22 @@ db.sync({alter:true}).then(() => {
     console.log(err);
 });
 
+
+// db.sync().then(() => {
+//     console.log('Database is connected');
+//     }).catch((err:HttpError) => {
+//     console.log(err);
+// });
+
+
+// db.sync()
+//   .then(() => {
+//     console.log("Database is connected");
+//   })
+//   .catch((err: HttpError) => {
+//     console.log(err);
+//   });
+
 // {force:true}
 
 const port = PORT;

@@ -5,6 +5,10 @@ import { auth, companyAuth } from "../middleware/auth";
 //   getInvestment,
 //   //   getTotalInvestment,
 // } from "../controllers/investorController";
+import {
+  getInvestment,
+  //   getTotalInvestment,
+} from "../controllers/client/clientQueryController";
 import { getInvestor } from '../controllers/company/companyQueryController';
 
 const router = Router();

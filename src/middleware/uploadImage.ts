@@ -14,6 +14,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
+    console.log(req, file)
     return {
       folder: "useruploads",
     };
