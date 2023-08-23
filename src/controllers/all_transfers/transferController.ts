@@ -4,6 +4,7 @@ import Transfers, { TRANSFER } from "../../model/transfer";
 import { v4 } from "uuid";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
+import { Op } from "sequelize";
 
 import Company from "../../model/company";
 import investment_Records from '../../model/investmentRecord'
@@ -267,7 +268,44 @@ export const transferToInvestmentCompany = async (
       const user_firstName = user_details.firstName
       const user_lastName = user_details.lastName
 
+      const company_details:any = await Company.findOne({where: { accountNumber: company_account_number }})
+      if(company_details.accountNumber){
+
+        const company_id = company_details.id
+        const company_account_balance = company_details.wallet
+        const comapany_wallet_balance = amount + company_account_balance
+        const min_investment_amount = company_details.min_investment_amount
+        const max_investment_amount = company_details.max_investment_amount
+
       if( user_account_balance > amount){
+        if( amount < min_investment_amount ){
+          return res.status(400).json({
+            message: `You cannot invest below the minimum investment amount.`
+          })
+        }
+
+        if(amount > max_investment_amount){
+          return res.status(400).json({
+            message: `You cannot invest above the maximum investment amount.`
+          })        
+        }
+
+        //User can only invest once in a company.
+        const existing_investor_for_that_company =  await investment_Records.findAll({
+          where: {
+            [Op.and]: [
+               { investor_id: user_id  },
+                  { investment_company_id: company_id }
+             ]
+           }
+         });
+            
+         if(existing_investor_for_that_company.length > 0){
+           return res.status(200).json({
+             message: `SORRY!! You can only invest once in this company. Please try looking at other suitable investment plans from other companies on Plutus investment portal. Thank you for considering plutus as your investment option.`
+           })
+         }
+
         const user_new_balance = user_account_balance - amount
         const investment_Transfer = await User.update(
           { accountBalance: user_new_balance },
@@ -278,13 +316,6 @@ export const transferToInvestmentCompany = async (
           }
         );
 
-        const company_details:any = await Company.findOne({where: { accountNumber: company_account_number }})
-        if(company_details.accountNumber){
-
-          const company_id = company_details.id
-          const company_account_balance = company_details.wallet
-          const comapany_wallet_balance = amount + company_account_balance
-  
           const successful_Transfer = await Company.update(
             { wallet: comapany_wallet_balance },
             {
@@ -340,6 +371,7 @@ export const transferToInvestmentCompany = async (
               })
             }
           }else{
+
             if( investment_Transfer && successful_Transfer){
               const sucessful_transaction_record = await investment_Records.create({
                 id: v4(),

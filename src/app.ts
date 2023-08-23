@@ -9,6 +9,7 @@ import transactionRoute from './routes/transaction.route'
 import investorRoute from './routes/investor.route';
 import cors from 'cors';
 import logger from "morgan"
+import { db } from './config';
 
 const { PORT } = config
 
@@ -30,9 +31,9 @@ app.get('/', (req, res) => {
     }
 )
 
-// db.sync({force:true}).then(() => {
+// db.sync({alter:true}).then(() => {
 //     console.log('Database is connected');
-//     }).catch((err:HttpError) => {
+//     }).catch((err) => {
 //     console.log(err);
 // });
 

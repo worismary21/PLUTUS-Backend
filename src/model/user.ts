@@ -80,7 +80,7 @@ User.init({
         allowNull:true
     },
     accountBalance:{
-        type:DataTypes.INTEGER,
+        type:DataTypes.FLOAT,
         allowNull:true
     },
     role:{

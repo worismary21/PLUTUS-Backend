@@ -20,8 +20,8 @@ export type ICOMPANY = {
   investment_category: string;
   investment_description: string;
   duration: number;
-  min_investment_amount: string;
-  max_investment_amount: string;
+  min_investment_amount: number;
+  max_investment_amount: number;
 };
 
 class Company extends Model<ICOMPANY> {
@@ -65,7 +65,7 @@ Company.init(
       allowNull: false,
     },
     wallet: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
     verified: {
@@ -105,11 +105,11 @@ Company.init(
       allowNull: false,
     },
     min_investment_amount: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
     max_investment_amount: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
   },

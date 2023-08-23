@@ -71,16 +71,16 @@ Investor.init({
             key: "id"
         }
     }
-
-
 }, {
     sequelize:db,
     tableName:"Investor",
     modelName:"Investor"
 })
 
-
-
-
-
 export default Investor
+
+
+
+
+
+
