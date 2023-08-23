@@ -1,6 +1,10 @@
 // import {createInvestor} from '../controllers/investorController'
 import { Router } from "express";
 import { auth, companyAuth } from "../middleware/auth";
+// import {
+//   getInvestment,
+//   //   getTotalInvestment,
+// } from "../controllers/investorController";
 import {
   getInvestment,
   //   getTotalInvestment,
@@ -11,7 +15,7 @@ const router = Router();
 
 router.get("/get", companyAuth, getInvestor);
 
-router.get("/getinvestment/", auth, getInvestment);
+// router.get("/getinvestment/", auth, getInvestment);
 // router.get("/gettotalinvestment", auth, getTotalInvestment);
 
 // router.post('/register/:id', createInvestor);

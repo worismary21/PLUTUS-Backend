@@ -77,6 +77,33 @@ export const getInvestor = async (req: Request, res: Response) => {
 };
 
 
+export const getCompanyInfo = async(req:Request, res:Response) => {
+  try{
+      const token:any = req.headers.authorization
+          const payload = token.split(" ")[1]
+          const company_details:any = jwt.verify(payload, process.env.APP_SECRET!)
+      
+          if(company_details.id){
+              const id = company_details.id
+              const company_info:any = await Company.findOne({ where: { id:id}})
+      
+           
+              return res.status(200).json({
+                  company:company_info
+              })
+          }else{
+              res.status(400).json({
+                  message: "Please LOGIN to get your information"
+              })
+          }
+  }catch(error){
+      console.error(error)
+      res.status(500).json({
+          message: "Internal Server Error"
+      })      
+  }
+}
+
 
 
 
