@@ -85,7 +85,7 @@ export const createCompanySchema = Joi.object({
   .messages({
     'any.required': 'Please provide a description for this investment'
   }),
-  duration: Joi.number().required(),
+  duration: Joi.string().required(),
   min_investment_amount: Joi.number().required()
   .messages({
     'any.required': 'Minimum investment amount is required'
