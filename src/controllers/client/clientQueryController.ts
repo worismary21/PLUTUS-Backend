@@ -5,6 +5,7 @@ import User from '../../model/user'
 import Transfers from '../../model/transfer'
 import Beneficiary from '../../model/beneficiary'
 import Investor from '../../model/investor';
+import Company from '../../model/company'
 
 dotenv.config()
 
@@ -255,6 +256,35 @@ export const getInvestment = async (req: Request, res: Response) => {
        res.status(500).json({ error: "Internal Server Error" });
      }
    };
+
+
+   export const getInvestmentsByUser = async (
+     req: Request,
+     res: Response,
+     next: NextFunction
+   ) => {
+     try {
+       const companies = await Company.findAll({
+         limit: 8,
+         order: [["noOfInvestors", "DESC"]], // Order by highest number of investors
+       });
+   
+       const companyData = companies.map((company: any) => {
+         return {
+           companyName: company.companyName,
+           numberOfInvestors: company.noOfInvestors,
+           rateOfReturn: company.roi,
+         };
+       });
+   
+       return res.json({
+         data: companyData,
+       });
+     } catch (error) {
+       return res.status(500).json({ error: "Internal server error" });
+     }
+   };
+   
 
 
 
