@@ -33,7 +33,6 @@ export const createCompany = async (
         return res.status(400).json({ message: error.details[0].message });
       }
   
-      console.log("hello")
       const token: any = req.headers.authorization;
       const token_info = token.split(" ")[1];
       const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
@@ -43,6 +42,7 @@ export const createCompany = async (
         where: { id: userId}
       }) 
       const user_role = company_details.role
+      console.log("user", user_role)
   
 
       if (decodedToken) {
@@ -69,7 +69,7 @@ export const createCompany = async (
             message: `${companyName} has already been registered.`,
           });
         } else {
-          if (user_role=== "admin") {
+          if (user_role === "admin") {
             const OTP = generateOTP();
   
             const company_account_number: string = companyAccount();
