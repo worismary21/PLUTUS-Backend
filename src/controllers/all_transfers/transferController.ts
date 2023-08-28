@@ -131,6 +131,57 @@ export const transferToBeneficiary = async (
                   status: "SUCCESSFUL",
                   senderId: sender_id,
                 });
+                let sender_notification = sender_accountDetails.notification
+                let beneficiary_notifcation = validated_Beneficiary.notification
+
+                const timestamp = new Date().getTime()
+                const date = new Date(timestamp)
+                const year = date.getFullYear()
+                const month = date.getMonth()+1
+                const transfer_date = date.getDate()
+
+                const hours = date.getHours().toString().padStart(2, "0")
+                const minutes = date.getMinutes().toString().padStart(2, "0")
+                const seconds = date.getSeconds().toString().padStart(2, "0")
+
+                let debit_transfer_alert = {
+                  Txn: "DEDIT",
+                  Ac: `${sender_accountNumber[0]}XX..${sender_accountNumber[sender_accountNumber.length-3]}${sender_accountNumber[sender_accountNumber.length-2]}X`,
+                  Amt: `$${amount}`,
+                  Des: `${validated_Beneficiary.firstName} ${validated_Beneficiary.lastName}/Transfer P APP_`,
+                  Date: `${year}-${month}-${transfer_date} ${hours}:${minutes}:${seconds}`,
+                  Bal: `$${sender_new_Account_Balance}`
+                }
+                sender_notification.push(debit_transfer_alert)
+
+                const sender_Transaction_Status = await User.update(
+                  { notification: sender_notification },
+                  {
+                    where: {
+                      accountNumber: sender_accountNumber,
+                    },
+                  }
+                );
+
+                let credit_transfer_alert = {
+                  Txn: "CREDIT",
+                  Ac: `${beneficiary_AccountNumber[0]}XX..${beneficiary_AccountNumber[beneficiary_AccountNumber.length-3]}${beneficiary_AccountNumber[beneficiary_AccountNumber.length-2]}X`,
+                  Amt: `$${amount}`,
+                  Des: `${sender_accountDetails.firstName} ${sender_accountDetails.lastName}/Transfer P APP_`,
+                  Date: `${year}-${month}-${transfer_date} ${hours}:${minutes}:${seconds}`,
+                  Bal: `$${beneficiary_new_AccountBalance}`
+                }
+                beneficiary_notifcation.push(credit_transfer_alert)
+
+                const beneficiary_Transaction_Status = await User.update(
+                  { notification: beneficiary_notifcation },
+                  {
+                    where: {
+                      accountNumber: beneficiary_AccountNumber,
+                    },
+                  }
+                );
+
                 return res.status(200).json({
                   message: "Transaction Successful",
                   data: sucessful_transfer
@@ -160,7 +211,6 @@ export const transferToBeneficiary = async (
               message: "Insufficient Funds",
             });
           }
-
         } else {
           return res.status(400).json({
             message: "Cannot make TRANSFER. Please check details properly.",
@@ -393,9 +443,17 @@ export const transferToInvestmentCompany = async (
               })
 
               const investment_duration = company_dets.duration
+              let actual_investment_duration = 0
+              if(investment_duration.split(" ")[1] === "months" || investment_duration.split(" ")[1] === "month"){
+                actual_investment_duration += +investment_duration.split("")[0]
+              }else if(investment_duration.split(" ")[1] === "year" || investment_duration.split(" ")[1] === "years"){
+                actual_investment_duration += (+investment_duration.split("")[0] * 12)
+              }
+              console.log(actual_investment_duration)
+              
               const company_roi = company_dets.roi
               const expected_return_amount:any = (amount * company_roi).toFixed(2)
-              const expected_monthly_return:any = (expected_return_amount/investment_duration).toFixed(2)
+              const expected_monthly_return:any = (expected_return_amount/actual_investment_duration).toFixed(2)
 
              await Investor.create({
                 id:v4(),

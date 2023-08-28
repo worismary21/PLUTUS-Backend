@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import User, { IUSER } from "../../model/user";
 import { v4 } from "uuid";
-import { hashedPassword, tokenGenerator } from "../../utils/auth";
+import { hashedPassword, tokenGenerator} from "../../utils/auth";
 import { genAccount } from "../../utils/auth";
 import { generateOTP } from "../../utils/auth";
 import { emailHtml, sendmail } from "../../utils/notifications";
@@ -9,27 +9,15 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import Joi from "joi";
 import bcrypt from "bcrypt";
-import {
-  signUpUser,
-  clientLogin,
-  userProfileUpdate,
-  forgot_password,
-  verifyChangePassword_Email,
-  createUser_Image,
-  verifyChange_Password,
-} from "../../utils/inputvalidation";
+import { signUpUser } from '../../utils/inputvalidation'
 import Company from "../../model/company";
 
 dotenv.config();
 
 //Controller for signing up
-export const userSignup = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const userSignup = async ( req: Request, res: Response, next: NextFunction) => {
   try {
-    const schema = signUpUser;
+    const schema = signUpUser
     const { error, value } = schema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
@@ -39,9 +27,7 @@ export const userSignup = async (
 
     const existingUser = await User.findOne({ where: { email: email } });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "Account already exists. Kindly login." });
+      return res.status(400).json({ message: "Account already exists. Kindly login." });
     } else {
       const hashPassword: string = await hashedPassword(password);
       const accNumber: string = genAccount();
@@ -58,7 +44,7 @@ export const userSignup = async (
         otp: OTP,
         token: "",
         imageUrl: "",
-        notification: "",
+        notification: [],
         accountBalance: 10000,
         role: "user",
         verify: false,
@@ -153,6 +139,8 @@ export const verifyUser = async (
     });
   }
 };
+
+
 //Controller for logging-in user
 export const loginUser = async (
   req: Request,
@@ -160,19 +148,20 @@ export const loginUser = async (
   next: NextFunction
 ) => {
   try {
-    const schema = clientLogin;
+    const schema = Joi.object({
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    });
     const { error, value } = schema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
 
     const { email, password } = req.body;
-    const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
+    const user = await User.findOne({ where: { email } }) as unknown as IUSER;
 
     if (!user) {
-      const user: any = (await Company.findOne({
-        where: { email },
-      })) as unknown as IUSER;
+      const user:any = await Company.findOne({ where: { email } }) as unknown as IUSER;
 
       if (user && user.verified === true) {
         const validate = await bcrypt.compare(password, user.password);
@@ -189,9 +178,6 @@ export const loginUser = async (
             email: user.email,
             user_token: token,
             role: user.role,
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
           });
         } else {
           res.status(400).json({
@@ -218,14 +204,10 @@ export const loginUser = async (
           );
 
           return res.status(200).json({
-               message: `Login successfully`,
-               email: user.email,
-               user_token: token,
-               role: user.role,
-               verify: user.verify,
-               id: user.id,
-               firstName: user.firstName,
-               lastName: user.lastName
+            message: `Login successfully`,
+            email: user.email,
+            user_token: token,
+            role: user.role,
           });
         } else {
           res.status(400).json({
@@ -293,12 +275,8 @@ export const verifyChangePasswordEmail = async (
   next: NextFunction
 ) => {
   try {
-    const schema = verifyChangePassword_Email;
-    const { error, value } = schema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
     const { email } = req.body;
+
     // Find user based on email
     const user = await User.findOne({ where: { email } });
 
@@ -372,11 +350,6 @@ export const verifyChangePassword = async (
   next: NextFunction
 ) => {
   try {
-    const schema = verifyChange_Password;
-    const { error, value } = schema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
     const userid = req.params.id;
     const { oldPassword, newPassword, confirm_password } = req.body;
 
@@ -435,89 +408,74 @@ export const updateUserProfile = async (
   next: NextFunction
 ) => {
   try {
-    const schema = userProfileUpdate;
-    const { error, value } = schema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-    let {
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      address,
-      zipCode,
-      city,
-      state,
-      country,
-    } = req.body;
-   
-    // console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
-
-    const updatedUser = (await User.update({
-      firstName,
-      lastName,
-      phoneNumber,
-      address,
-      zipCode,
-      city,
-      state,
-      country
-    }, {
-      where: { email: email },
-    })) as unknown as IUSER;
-
-    const user = await User.findOne({where : {email:email}}) as unknown as IUSER
-    console.log("updateUser", user)
-    if (updatedUser) {
-      return res.status(200).json({
-        message: `Your profile has been updated successfully`,
-        data: updatedUser,
-      });
-    }
-    return res.status(401).json({
-      message: `Update operation failed`,
-    });
+      let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
+        // console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
+      const updateField: Partial<IUSER> = {}
+      if(!firstName){
+          updateField.firstName = firstName
+      }
+      if(!lastName){
+          updateField.lastName = lastName
+      }
+      if(!email){
+          updateField. email =  email
+      }
+      if(!phoneNumber){
+          updateField. phoneNumber =  phoneNumber
+      }
+      // if(!imageUrl){
+      //     updateField.imageUrl =  req.file
+      // }
+      if(!address){
+          updateField. address =  address
+      }
+      if(!zipCode){
+          updateField. zipCode =  zipCode
+      }
+      if(!city){
+          updateField. city =  city
+      }
+      if(!state){
+          updateField. state =  state
+      }
+      if(!country){
+          updateField. country =  country
+      }
+      const updatedUser = await User.update(updateField,  {where: {email: email }} ) as unknown as IUSER
+         if (updatedUser) {
+            return res.status(200).json({
+               message: `Your profile has been updated successfully`,
+               data: updatedUser
+            });
+         }
+         return res.status(401).json({
+            message: `Update operation failed`
+         });
   } catch (error: any) {
     console.log(error.message);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-export const createUserImage = async (req: JwtPayload, res: Response) => {
+export const createUserImage = async (req: Request, res: Response) => {
   try {
-    const schema = createUser_Image;
-    const { error, value } = schema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-    const { id } = req.user 
 
-    const user = (await User.findOne({
-      where: { id:id},
-    })) as unknown as IUSER;
-
-    console.log('user')
-
-    const updateField: Partial<IUSER> = {};
-
-    const updateUserImage = (await User.update(
-      { imageUrl: req.file?.path },
-      { where: { id: id } }
-    )) as unknown as IUSER;
-
-    if (updateUserImage) {
-      return res.status(200).json({
-        message: `Your profile image has been updated successfully`,
-        data: updateUserImage,
-      });
-    }
-    return res.status(401).json({
-      message: `Image update operation failed`,
-    });
+      const {email} = req.body
+      const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
+      const updateField: Partial<IUSER> = {}
+      const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
+      if (updateUserImage) {
+          return res.status(200).json({
+             message: `Your profile image has been updated successfully`,
+             data: updateUserImage
+          });
+       }
+       return res.status(401).json({
+          message: `Image update operation failed`
+       });
   } catch (error) {
     return res.status(500).json({
-      message: `Error Uploading Image`,
+      message: `Error Uploading Imsge`,
     });
   }
 };
@@ -527,13 +485,8 @@ export const forgotPassword = async (
   res: Response,
   next: NextFunction
 ) => {
+  const { email } = req.body;
   try {
-    const schema = forgot_password;
-    const { error, value } = schema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-    const { email } = req.body;
     const user = (await User.findOne({ where: { email } })) as unknown as IUSER;
     if (!user) {
       return res.status(400).json({ error: "User does not exist!" });

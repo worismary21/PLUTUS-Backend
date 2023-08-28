@@ -83,7 +83,7 @@ export const emailHtmlForCompany = (companyName:string, email:string, password:s
                     return mail
 }
 
-export const emailHtmlForCompanyTransferToInvestor = (investor_name:string, expectedReturn:number, companyName:string, roi:number, amount:number, duration:string, monthlyReturn:number, date:string)=>{
+export const emailHtmlForCompanyTransferToInvestor = (investor_name:string, expectedReturn:number, companyName:string, roi:number, amount:number, actual_duration:string, monthlyReturn:number, date:string)=>{
     const mail = `
                     <p>Dear <strong>${investor_name}</strong>,</p><br>
                     <p>Your account has been credited with <span style = "color:green"><strong>$${expectedReturn}</strong></span> from <strong>${companyName}</strong> on <strong>${date}</strong>.</p>
@@ -92,7 +92,7 @@ export const emailHtmlForCompanyTransferToInvestor = (investor_name:string, expe
                     <p>Investment Company: <span><strong>${companyName}</strong></span></p>
                     <p>ROI: <span style = "color:green">${roi}</span></p>
                     <p>Investment Capital: <span style = "color:green"> $${amount}</span></p>
-                    <p>Duration: <span style = "color:green">${duration} months</span></p>
+                    <p>Duration: <span style = "color:green">${actual_duration} months</span></p>
                     <p>Monthly Return: <span style = "color:green">$${monthlyReturn}</span></p>
                     <p>Total Investment Return: <span style = "color:green"><strong>$${expectedReturn}</strong></span></p><br>
 

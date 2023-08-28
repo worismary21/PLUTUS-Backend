@@ -339,7 +339,7 @@ export const createCompany = async (
   
             if(investor_investment_status === "SUCCESSFUL"){
               const company_account_number = company_details.accountNumber
-              const company_account_balance = (company_details.wallet).toFixed(2)
+              const company_account_balance = +((company_details.wallet).toFixed(2))
               const name_of_company = company_details.companyName
   
               const investor_account_balance = investor_main_details.accountBalance
@@ -357,7 +357,7 @@ export const createCompany = async (
 
               if(investor_returns_record){
 
-                const investor_return_of_investment = (investor_returns_record.expectedReturn).toFixed(2)
+                const investor_return_of_investment = +((investor_returns_record.expectedReturn).toFixed(2))
 
                 if(investor_return_of_investment < company_account_balance){
                   const new_investor_balance = investor_account_balance + investor_return_of_investment
@@ -430,9 +430,17 @@ export const createCompany = async (
                         const roi = company_details.roi
                         const amount = investor_investment_details.amount
                         const duration = company_details.duration
+
+                        let actual_duration = ""
+                        if(duration.split(" ")[1].toLowerCase() === "months" || duration.split(" ")[1].toLowerCase() === "month"){
+                          actual_duration += duration.split("")[0]
+                        }else if(duration.split(" ")[1].toLowerCase() === "year" || duration.split(" ")[1].toLowerCase() === "years"){
+                          actual_duration += (duration.split("")[0] * 12)
+                        }
+
                         const monthlyReturn = investor_returns_record.monthlyReturn
-                      
-                        const html = emailHtmlForCompanyTransferToInvestor (investor_name, expectedReturn, companyName, roi, amount, duration, monthlyReturn, date);
+
+                        const html = emailHtmlForCompanyTransferToInvestor (investor_name, expectedReturn, companyName, roi, amount, actual_duration, monthlyReturn, date);
                         const sent_mail = await sendmailForInvestment(
                           `${process.env.GMAIL_USER}`,
                           email,

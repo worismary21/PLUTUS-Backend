@@ -18,7 +18,7 @@ export type IUSER = {
     otp:string,
     token:string,
     imageUrl?:string,
-    notification:string,
+    notification:any[],
     accountBalance:number,
     role: string,
     verify: boolean,
@@ -79,7 +79,7 @@ User.init({
         allowNull:true
     },
     notification:{
-        type:DataTypes.STRING,
+        type:DataTypes.ARRAY(DataTypes.JSONB),
         allowNull:true
     },
     accountBalance:{
