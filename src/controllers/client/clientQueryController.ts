@@ -256,6 +256,44 @@ export const getInvestment = async (req: Request, res: Response) => {
      }
    };
 
+   export const getUserNotifications = async(req:Request, res:Response, next:NextFunction) => {
+
+     try{
+          const token: any = req.headers.authorization;
+          const token_info = token.split(" ")[1];
+          const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+     
+          if(decodedToken){
+               const user_id = decodedToken.id
+               const user_details:any = await User.findOne({where: {id: user_id}})
+               const user_role = user_details.role
+               const user_name = `${user_details.firstName} ${user_details.lastName}`
+               if(user_role === "user"){
+                    const user_transfer_notifications = user_details.notification
+
+                    return res.status(200).json({
+                         message: `You have SUCCESSFULLY gotten all transaction notifcations of ${user_name}`,
+                         data: user_transfer_notifications
+                    })
+               }else{
+                    return res.status(400).json({
+                         message: `Your account is not registered as a user.`
+                    })
+               }
+          }else{
+               return res.status(400).json({
+                    message: `No Bearer Token for authorization`
+               })
+          }
+     }catch(error){
+          console.error("Error getting user notifcations", error);
+          res.status(500).json({
+            error: "Internal server error, Error getting notifications",
+          });
+     }
+
+   }
+
 
 
 
