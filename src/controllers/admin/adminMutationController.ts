@@ -36,7 +36,7 @@ export const createAdmin = async (
         otp: "",
         token: "",
         imageUrl: "",
-        notification: "",
+        notification: [],
         accountBalance: 0,
         phoneNumber:"",
         role: "admin",

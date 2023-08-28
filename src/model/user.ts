@@ -18,7 +18,7 @@ export type IUSER = {
     otp:string,
     token:string,
     imageUrl?:string,
-    notification:string,
+    notification:any[],
     accountBalance:number,
     role: string,
     verify: boolean,
@@ -36,64 +36,63 @@ class User extends Model<IUSER>{
      otp: any
 }
 
-User.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      primaryKey: true,
-      allowNull: false,
+User.init({
+    id:{
+        type:DataTypes.UUID,
+        primaryKey:true,
+        allowNull:false
     },
-    firstName: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    firstName:{
+        type:DataTypes.STRING,
+        allowNull:false
     },
-    lastName: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    lastName:{
+        type:DataTypes.STRING,
+        allowNull:false
     },
-    accountNumber: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    accountNumber:{
+        type:DataTypes.STRING,
+        allowNull:true
     },
-    savingsWallet: {
-      type: DataTypes.JSON,
-      allowNull: true,
+    savingsWallet:{
+        type:DataTypes.JSON,
+        allowNull:true
     },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    email:{
+        type:DataTypes.STRING,
+        allowNull:false
     },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    password:{
+        type:DataTypes.STRING,
+        allowNull:false
     },
-    otp: {
-      type: DataTypes.STRING,
-      allowNull: true,
+   otp:{
+        type:DataTypes.STRING,
+        allowNull:true
+   },
+   token:{
+        type:DataTypes.STRING,
+        allowNull:true
+        },
+    imageUrl:{
+        type:DataTypes.STRING,
+        allowNull:true
     },
-    token: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    notification:{
+        type:DataTypes.ARRAY(DataTypes.JSONB),
+        allowNull:true
     },
-    imageUrl: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    accountBalance:{
+        type:DataTypes.FLOAT,
+        allowNull:true
     },
-    notification: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    role:{
+        type:DataTypes.STRING,
+        allowNull:true
     },
-    accountBalance: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    role: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    verify: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
+    verify:{
+        type:DataTypes.BOOLEAN,
+        allowNull:true
     },
     phoneNumber:{
         type:DataTypes.STRING,

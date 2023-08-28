@@ -1,18 +1,16 @@
-
 import express from "express";
 import dotenv from "dotenv";
-import { db } from "./config";
 import { HttpError } from "http-errors";
 import config from "./config/dbConfig";
 import userRoute from "./routes/users.routes";
 import beneficiaryRoute from "./routes/beneficiary.routes";
 import transferRoute from "./routes/transfer.route";
 import companyRoute from "./routes/company.route";
-import transaction from "./routes/transfer.route";
 import transactionRoute from "./routes/transaction.route";
 import investorRoute from "./routes/investor.route";
 import cors from "cors";
 import logger from "morgan";
+import { db } from "./config";
 
 const { PORT } = config;
 
@@ -28,35 +26,19 @@ app.use("/beneficiary", beneficiaryRoute);
 app.use("/transfer", transferRoute);
 app.use("/company", companyRoute);
 app.use("/transactions", transactionRoute);
-app.use("/transaction", transaction);
 
-
-app.get('/', (req, res) => {
-    return res.send('Hello World!')
-    }
-)
-
-db.sync({alter:true}).then(() => {
-    console.log('Database is connected');
-    }).catch((err:HttpError) => {
-    console.log(err);
+app.get("/", (req, res) => {
+  return res.send("Hello World!");
 });
 
 
-// db.sync().then(() => {
-//     console.log('Database is connected');
-//     }).catch((err:HttpError) => {
-//     console.log(err);
-// });
-
-
-// db.sync()
-//   .then(() => {
-//     console.log("Database is connected");
-//   })
-//   .catch((err: HttpError) => {
-//     console.log(err);
-//   });
+db.sync({})
+  .then(() => {
+    console.log("Database is connected");
+  })
+  .catch((err: HttpError) => {
+    console.log(err);
+  });
 
 // {force:true}
 

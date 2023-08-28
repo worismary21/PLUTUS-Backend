@@ -4,6 +4,7 @@ import Transfers, { TRANSFER } from "../../model/transfer";
 import { v4 } from "uuid";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
+import { Op } from "sequelize";
 
 import Company from "../../model/company";
 import investment_Records from '../../model/investmentRecord';
@@ -130,6 +131,57 @@ export const transferToBeneficiary = async (
                   status: "SUCCESSFUL",
                   senderId: sender_id,
                 });
+                let sender_notification = sender_accountDetails.notification
+                let beneficiary_notifcation = validated_Beneficiary.notification
+
+                const timestamp = new Date().getTime()
+                const date = new Date(timestamp)
+                const year = date.getFullYear()
+                const month = date.getMonth()+1
+                const transfer_date = date.getDate()
+
+                const hours = date.getHours().toString().padStart(2, "0")
+                const minutes = date.getMinutes().toString().padStart(2, "0")
+                const seconds = date.getSeconds().toString().padStart(2, "0")
+
+                let debit_transfer_alert = {
+                  Txn: "DEDIT",
+                  Ac: `${sender_accountNumber[0]}XX..${sender_accountNumber[sender_accountNumber.length-3]}${sender_accountNumber[sender_accountNumber.length-2]}X`,
+                  Amt: `$${amount}`,
+                  Des: `${validated_Beneficiary.firstName} ${validated_Beneficiary.lastName}/Transfer P APP_`,
+                  Date: `${year}-${month}-${transfer_date} ${hours}:${minutes}:${seconds}`,
+                  Bal: `$${sender_new_Account_Balance}`
+                }
+                sender_notification.push(debit_transfer_alert)
+
+                const sender_Transaction_Status = await User.update(
+                  { notification: sender_notification },
+                  {
+                    where: {
+                      accountNumber: sender_accountNumber,
+                    },
+                  }
+                );
+
+                let credit_transfer_alert = {
+                  Txn: "CREDIT",
+                  Ac: `${beneficiary_AccountNumber[0]}XX..${beneficiary_AccountNumber[beneficiary_AccountNumber.length-3]}${beneficiary_AccountNumber[beneficiary_AccountNumber.length-2]}X`,
+                  Amt: `$${amount}`,
+                  Des: `${sender_accountDetails.firstName} ${sender_accountDetails.lastName}/Transfer P APP_`,
+                  Date: `${year}-${month}-${transfer_date} ${hours}:${minutes}:${seconds}`,
+                  Bal: `$${beneficiary_new_AccountBalance}`
+                }
+                beneficiary_notifcation.push(credit_transfer_alert)
+
+                const beneficiary_Transaction_Status = await User.update(
+                  { notification: beneficiary_notifcation },
+                  {
+                    where: {
+                      accountNumber: beneficiary_AccountNumber,
+                    },
+                  }
+                );
+
                 return res.status(200).json({
                   message: "Transaction Successful",
                   data: sucessful_transfer
@@ -159,7 +211,6 @@ export const transferToBeneficiary = async (
               message: "Insufficient Funds",
             });
           }
-
         } else {
           return res.status(400).json({
             message: "Cannot make TRANSFER. Please check details properly.",
@@ -263,27 +314,59 @@ export const transferToInvestmentCompany = async (
   next: NextFunction
 ) => {
   try {
-    const schema = transfer_InvestmentCompany
-    const { error, value } = schema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
     const token: any = req.headers.authorization;
     const token_info = token.split(" ")[1];
     const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
 
     if (decodedToken.email) {
-      const user_id = decodedToken.id;
-      const { amount, company_account_number } = req.body;
+      const user_id = decodedToken.id
+      const {amount, company_account_number} = req.body
 
-      const user_details: any = await User.findOne({ where: { id: user_id } });
-      const user_account_balance = user_details.accountBalance;
-      const user_account_number = user_details.accountNumber;
-      const user_firstName = user_details.firstName;
-      const user_lastName = user_details.lastName;
+      const user_details:any = await User.findOne({where: {id:user_id}})
+      const user_account_balance = user_details.accountBalance
+      const user_account_number = user_details.accountNumber
+      const user_firstName = user_details.firstName
+      const user_lastName = user_details.lastName
 
-      if (user_account_balance > amount) {
-        const user_new_balance = user_account_balance - amount;
+      const company_details:any = await Company.findOne({where: { accountNumber: company_account_number }})
+      if(company_details.accountNumber){
+
+        const company_id = company_details.id
+        const company_account_balance = company_details.wallet
+        const comapany_wallet_balance = amount + company_account_balance
+        const min_investment_amount = company_details.min_investment_amount
+        const max_investment_amount = company_details.max_investment_amount
+
+      if( user_account_balance > amount){
+        if( amount < min_investment_amount ){
+          return res.status(400).json({
+            message: `You cannot invest below the minimum investment amount.`
+          })
+        }
+
+        if(amount > max_investment_amount){
+          return res.status(400).json({
+            message: `You cannot invest above the maximum investment amount.`
+          })        
+        }
+
+        //User can only invest once in a company.
+        const existing_investor_for_that_company =  await investment_Records.findAll({
+          where: {
+            [Op.and]: [
+               { investor_id: user_id  },
+                  { investment_company_id: company_id }
+             ]
+           }
+         });
+            
+         if(existing_investor_for_that_company.length > 0){
+           return res.status(200).json({
+             message: `SORRY!! You can only invest once in this company. Please try looking at other suitable investment plans from other companies on Plutus investment portal. Thank you for considering plutus as your investment option.`
+           })
+         }
+
+        const user_new_balance = user_account_balance - amount
         const investment_Transfer = await User.update(
           { accountBalance: user_new_balance },
           {
@@ -293,13 +376,6 @@ export const transferToInvestmentCompany = async (
           }
         );
 
-        const company_details: any = await Company.findOne({ where: { accountNumber: company_account_number } });
-        if (company_details.accountNumber) {
-
-          const company_id = company_details.id;
-          const company_account_balance = company_details.wallet;
-          const comapany_wallet_balance = amount + company_account_balance;
-
           const successful_Transfer = await Company.update(
             { wallet: comapany_wallet_balance },
             {
@@ -308,15 +384,15 @@ export const transferToInvestmentCompany = async (
               },
             }
           );
-
+          
           const company_dets: any = await Company.findOne({
             where: { accountNumber: company_account_number },
           });
-
-          const current_wallet_balance = company_dets.wallet;
-          const expected_company_balance = comapany_wallet_balance;
-
-          if (current_wallet_balance !== expected_company_balance) {
+  
+          const current_wallet_balance = company_dets.wallet
+          const expected_company_balance = comapany_wallet_balance
+  
+          if( current_wallet_balance !== expected_company_balance ){
 
             const update_company_balance = await Company.update(
               { wallet: company_account_balance },
@@ -336,7 +412,7 @@ export const transferToInvestmentCompany = async (
               }
             );
 
-            if (update_company_balance && update_user_balance) {
+            if(update_company_balance && update_user_balance){
               const pending_transaction_record = await investment_Records.create({
                 id: v4(),
                 amount: amount,
@@ -344,18 +420,19 @@ export const transferToInvestmentCompany = async (
                 investor_id: user_id,
                 investment_company_id: company_id,
                 transaction_status: "PENDING"
-              });
+              })
               return res.status(400).json({
                 message: `Transfer PENDING.`,
-                data: pending_transaction_record
-              });
-            } else {
+                data: pending_transaction_record 
+              })
+            }else{
               return res.status(400).json({
                 message: `Please wait and try for a few minutes before trying again or contact Customer Service.`
-              });
+              })
             }
-          } else {
-            if (investment_Transfer && successful_Transfer) {
+          }else{
+
+            if( investment_Transfer && successful_Transfer){
               const sucessful_transaction_record = await investment_Records.create({
                 id: v4(),
                 amount: amount,
@@ -363,44 +440,51 @@ export const transferToInvestmentCompany = async (
                 investor_id: user_id,
                 investment_company_id: company_id,
                 transaction_status: "SUCCESSFUL",
-              });
+              })
 
-              const investment_duration = company_dets.duration;
-              const company_roi = company_dets.roi;
-              const expected_return_amount: any = (amount * company_roi).toFixed(2);
-              const expected_monthly_return: any = (expected_return_amount / investment_duration).toFixed(2);
+              const investment_duration = company_dets.duration
+              let actual_investment_duration = 0
+              if(investment_duration.split(" ")[1] === "months" || investment_duration.split(" ")[1] === "month"){
+                actual_investment_duration += +investment_duration.split("")[0]
+              }else if(investment_duration.split(" ")[1] === "year" || investment_duration.split(" ")[1] === "years"){
+                actual_investment_duration += (+investment_duration.split("")[0] * 12)
+              }
+              console.log(actual_investment_duration)
+              
+              const company_roi = company_dets.roi
+              const expected_return_amount:any = (amount * company_roi).toFixed(2)
+              const expected_monthly_return:any = (expected_return_amount/actual_investment_duration).toFixed(2)
 
-              await Investor.create({
-                id: v4(),
-                firstName: user_details.firstName,
-                lastName: user_details.lastName,
-                accountNumber: user_details.accountNumber,
-                email: user_details.email,
-                investedCapital: amount,
-                expectedReturn: expected_return_amount,
-                monthlyReturn: expected_monthly_return,
+             await Investor.create({
+                id:v4(),
+                firstName:user_details.firstName,
+                lastName:user_details.lastName,
+                accountNumber:user_details.accountNumber,
+                email:user_details.email,
+                investedCapital:amount,
+                expectedReturn:expected_return_amount,
+                monthlyReturn:expected_monthly_return,
                 returnOnInvestment: company_roi,
                 active: true,
-                companyId: company_id,
-                companyName: ""
+                companyId:company_id,
+                companyName: company_dets.companyName
+              })
 
-              });
-
-              const investor_count = company_dets.noOfInvestors + 1;
-              await Company.update(
-                { noOfInvestors: investor_count },
-                {
-                  where: {
-                    accountNumber: company_account_number,
-                  },
-                }
-              );
+                const investor_count = company_dets.noOfInvestors + 1
+                     await Company.update(
+                  { noOfInvestors: investor_count },
+                  {
+                    where: {
+                      accountNumber: company_account_number,
+                    },
+                  }
+                );
 
               return res.status(200).json({
                 message: `Transfer SUCCESSFUL!!`,
                 data: sucessful_transaction_record
-              });
-            } else {
+              })
+            }else{
               const failed_transaction_record = await investment_Records.create({
                 id: v4(),
                 amount: amount,
@@ -408,22 +492,22 @@ export const transferToInvestmentCompany = async (
                 investor_id: user_id,
                 investment_company_id: company_id,
                 transaction_status: "FAILED"
-              });
+              })
               return res.status(400).json({
                 message: `Transfer FAILED.`,
                 data: failed_transaction_record
-              });
+              })        
             }
           }
-        } else {
+        }else{
           return res.status(400).json({
             message: `Company does not exist. Please check if account number is correct`
-          });
+          })
         }
-      } else {
+      }else{
         return res.status(400).json({
           message: `Sorry! You do not have sufficient funds to make this investment. Please credit your account`
-        });
+        })
       }
     }
   } catch (error) {

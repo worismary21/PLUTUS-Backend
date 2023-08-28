@@ -20,8 +20,8 @@ export type ICOMPANY = {
   investment_category: string;
   investment_description: string;
   duration: string;
-  min_investment_amount: string;
-  max_investment_amount: string;
+  min_investment_amount: number;
+  max_investment_amount: number;
   imageUrl:string;
   phoneNumber:string;
   address:string;
@@ -72,7 +72,7 @@ Company.init(
       allowNull: false,
     },
     wallet: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
     verified: {
@@ -112,11 +112,11 @@ Company.init(
       allowNull: false,
     },
     min_investment_amount: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
     max_investment_amount: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
     imageUrl:{
