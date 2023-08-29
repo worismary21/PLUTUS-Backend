@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+import {Request, Response, NextFunction } from 'express'
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
+import User from '../../model/user'
+import Transfers from '../../model/transfer'
+import Beneficiary from '../../model/beneficiary'
+import Investor from '../../model/investor';
+import Company from '../../model/company'
+=======
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -6,6 +16,7 @@ import Transfers from "../../model/transfer";
 import Beneficiary from "../../model/beneficiary";
 import Investor from "../../model/investor";
 import Company from "../../model/company";
+>>>>>>> 0621a29c3e77831548c101a15eb0b357ee35201d
 
 dotenv.config();
 
@@ -245,12 +256,55 @@ export const getInvestment = async (req: Request, res: Response) => {
      }
    };
 
-   export const getUserNotifications = async(req:Request, res:Response, next:NextFunction) => {
+export const getCompanyDetails = async(req: Request, res:Response, next:NextFunction) => {
+  
+  try{
+    const token: any = req.headers.authorization;
+    const token_info = token.split(" ")[1];
+    const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
 
-     try{
-          const token: any = req.headers.authorization;
-          const token_info = token.split(" ")[1];
-          const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+          if(decodedToken){
+
+               const user_id = decodedToken.id
+
+               const user_Info:any = await User.findOne({ 
+                    where: 
+                    { id: user_id}
+               })
+               const user_role = user_Info.role
+
+               if(user_role === "user"){
+                    const getAllCompanies = await Company.findAll()
+
+                    return res.status(200).json({
+                         message: `You get have SUCCESSFULLY gotten all companies data.`,
+                         data: getAllCompanies
+                    })
+               }else{
+                    return res.status(400).json({
+                         message: `SORRY! You are not registered as a USER.`
+                    })
+               }
+          }else{
+               res.status(400).json({
+                    message: `You are not an authroized user. Token Not Found.`
+               })
+          }
+
+     }catch(error){
+          console.error(error)
+          res.status(500).json({
+               message: `Internal Server Error getting company details`
+          })
+     }
+}
+
+export const getUserNotifications = async(req:Request, res:Response, next:NextFunction) => {
+
+  try{
+       const token: any = req.headers.authorization;
+       const token_info = token.split(" ")[1];
+       const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
      
           if(decodedToken){
                const user_id = decodedToken.id
