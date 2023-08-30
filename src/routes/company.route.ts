@@ -21,3 +21,5 @@ router.put('/profileImage', companyAuth, upload.single('image'), createCompanyIm
 router.get('/allCompanyInfo', auth, getCompanyDetails)
 
 export default router
+
+
