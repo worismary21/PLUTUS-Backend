@@ -5,6 +5,7 @@ import { isAdmin } from '../utils/auth';
 import { upload } from '../middleware/uploadImage';
 import { createCompany, deleteCompany } from "../controllers/company/companyMutationController";
 import { auth, companyAuth } from '../middleware/auth';
+import { getCompanyDetails } from "../controllers/client/clientQueryController"
 
 const router = express.Router();
 
@@ -16,5 +17,7 @@ router.put('/updateProfile', updateCompanyProfile);
 router.get('/getCompanyInfo', getCompanyInfo )
 
 router.put('/profileImage', companyAuth, upload.single('image'), createCompanyImage)
+
+router.get('/allCompanyInfo', auth, getCompanyDetails)
 
 export default router
