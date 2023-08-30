@@ -42,9 +42,7 @@ export const createCompany = async (
         where: { id: userId}
       }) 
       const user_role = company_details.role
-      console.log("user", user_role)
   
-
       if (decodedToken) {
         const {
           companyName,
@@ -60,9 +58,14 @@ export const createCompany = async (
           max_investment_amount,
         } = req.body;
   
-        const findCompany = (await Company.findOne({
-          where: { email: email, companyName: companyName },
-        })) as unknown as ICOMPANY;
+        const findCompany:any = await Company.findOne({
+          where: {
+            [Op.or]: [
+              { email: email },
+              { companyName: companyName }
+            ]
+          }
+        });
   
         if (findCompany) {
           return res.status(400).json({
@@ -84,7 +87,7 @@ export const createCompany = async (
               password: hashPassword,
               otp: OTP,
               accountNumber: company_account_number,
-              wallet: 0,
+              wallet: 1000000,
               verified: true,
               role: "company",
               active: true,
@@ -316,10 +319,9 @@ export const createCompany = async (
         const user_role = company_details.role
         if(user_role === "company"){
         
-        const { investor_account_Number } = req.body
-
-        const investor_main_details:any = await User.findOne({ where: { accountNumber: investor_account_Number }})
-
+        const { accountNumber } = req.body
+        const investor_main_details:any = await User.findOne({ where: { accountNumber }})
+        
         if(investor_main_details){
           const investor_id_number:any = investor_main_details.id
 
@@ -333,10 +335,10 @@ export const createCompany = async (
           });
   
           if(investor_investment_details){
-  
+            
             const investor_investment_status = investor_investment_details.transaction_status
             const investor_name:any = investor_investment_details.investor_name
-  
+            
             if(investor_investment_status === "SUCCESSFUL"){
               const company_account_number = company_details.accountNumber
               const company_account_balance = +((company_details.wallet).toFixed(2))
@@ -356,7 +358,7 @@ export const createCompany = async (
               });
 
               if(investor_returns_record){
-
+              
                 const investor_return_of_investment = +((investor_returns_record.expectedReturn).toFixed(2))
 
                 if(investor_return_of_investment < company_account_balance){
@@ -364,7 +366,7 @@ export const createCompany = async (
     
                   const update_investor_accountBalance = await User.update({ 
                     accountBalance: new_investor_balance }, 
-                    { where: {accountNumber: investor_account_Number}})
+                    { where: {accountNumber}})
   
                   const new_company_balance = company_account_balance - investor_return_of_investment
   
@@ -374,14 +376,14 @@ export const createCompany = async (
   
                     if(update_investor_accountBalance && update_company_wallet){
   
-                      const current_investor_balance_details:any = await User.findOne({ where: { accountNumber: investor_account_Number}})
+                      const current_investor_balance_details:any = await User.findOne({ where: { accountNumber }})
                       const current_investor_balance = current_investor_balance_details.accountBalance
   
                       if(current_investor_balance !== new_investor_balance){
   
                         await User.update({ 
                           accountBalance: investor_account_balance }, 
-                          { where: {accountNumber: investor_account_Number}})
+                          { where: { accountNumber }})
   
                         await Company.update({ 
                             wallet: company_account_balance }, 
@@ -402,7 +404,6 @@ export const createCompany = async (
                           data: pending_transfer
                         })                  
                       }else{
-  
                         const successful_transfer = await roiTransferRecord.create({
                           id: v4(),
                           investor_id: investor_id_number,
