@@ -208,6 +208,10 @@ export const loginUser = async (
             email: user.email,
             user_token: token,
             role: user.role,
+            verify: user.verify,
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName
           });
         } else {
           res.status(400).json({
@@ -402,55 +406,54 @@ export const verifyChangePassword = async (
   }
 };
 
+
+
 export const updateUserProfile = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-      let { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body
-        // console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
-      const updateField: Partial<IUSER> = {}
-      if(!firstName){
-          updateField.firstName = firstName
+
+    const token: any = req.headers.authorization;
+    const token_info = token.split(" ")[1];
+    const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
+
+    if (decodedToken) {
+      const { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body;
+      const user_id = decodedToken.id;
+
+      const user_profile: any = await User.findOne({
+        where: { id: user_id }
+      });
+
+      const user_role = user_profile.role;
+      if (user_role === "user") {
+
+        const user_update_profile = await User.update({ firstName, lastName, phoneNumber, address, zipCode, city, state, country },
+          {
+            where: {
+              email
+            }
+          });
+
+        const get_user_dets = await User.findOne({
+          where: {
+            id: user_id
+          }
+        });
+
+        return res.status(200).json({
+          message: `Profile updated SUCCESSFULLY`,
+          data: get_user_dets
+        });
+
+      } else {
+        return res.status(400).json({
+          message: `You are not an authorized user. Please insert token.`
+        });
       }
-      if(!lastName){
-          updateField.lastName = lastName
-      }
-      if(!email){
-          updateField. email =  email
-      }
-      if(!phoneNumber){
-          updateField. phoneNumber =  phoneNumber
-      }
-      // if(!imageUrl){
-      //     updateField.imageUrl =  req.file
-      // }
-      if(!address){
-          updateField. address =  address
-      }
-      if(!zipCode){
-          updateField. zipCode =  zipCode
-      }
-      if(!city){
-          updateField. city =  city
-      }
-      if(!state){
-          updateField. state =  state
-      }
-      if(!country){
-          updateField. country =  country
-      }
-      const updatedUser = await User.update(updateField,  {where: {email: email }} ) as unknown as IUSER
-         if (updatedUser) {
-            return res.status(200).json({
-               message: `Your profile has been updated successfully`,
-               data: updatedUser
-            });
-         }
-         return res.status(401).json({
-            message: `Update operation failed`
-         });
+    }
   } catch (error: any) {
     console.log(error.message);
     return res.status(500).json({ message: "Internal server error" });
