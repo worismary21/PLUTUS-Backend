@@ -19,7 +19,7 @@ export type ICOMPANY = {
   noOfInvestors: number;
   investment_category: string;
   investment_description: string;
-  duration: number;
+  duration: string;
   min_investment_amount: number;
   max_investment_amount: number;
   imageUrl:string;

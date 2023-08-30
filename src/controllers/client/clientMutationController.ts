@@ -218,14 +218,14 @@ export const loginUser = async (
           );
 
           return res.status(200).json({
-               message: `Login successfully`,
-               email: user.email,
-               user_token: token,
-               role: user.role,
-               verify: user.verify,
-               id: user.id,
-               firstName: user.firstName,
-               lastName: user.lastName
+            message: `Login successfully`,
+            email: user.email,
+            user_token: token,
+            role: user.role,
+            verify: user.verify,
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName
           });
         } else {
           res.status(400).json({
@@ -429,60 +429,114 @@ export const verifyChangePassword = async (
   }
 };
 
+
+
 export const updateUserProfile = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const schema = userProfileUpdate;
-    const { error, value } = schema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-    let {
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      address,
-      zipCode,
-      city,
-      state,
-      country,
-    } = req.body;
-   
-    // console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
 
-    const updatedUser = (await User.update({
-      firstName,
-      lastName,
-      phoneNumber,
-      address,
-      zipCode,
-      city,
-      state,
-      country
-    }, {
-      where: { email: email },
-    })) as unknown as IUSER;
+    const token: any = req.headers.authorization;
+    const token_info = token.split(" ")[1];
+    const decodedToken: any = jwt.verify(token_info, process.env.APP_SECRET!);
 
-    const user = await User.findOne({where : {email:email}}) as unknown as IUSER
-    console.log("updateUser", user)
-    if (updatedUser) {
-      return res.status(200).json({
-        message: `Your profile has been updated successfully`,
-        data: updatedUser,
+    if (decodedToken) {
+      const { firstName, lastName, email, phoneNumber, address, zipCode, city, state, country } = req.body;
+      const user_id = decodedToken.id;
+
+      const user_profile: any = await User.findOne({
+        where: { id: user_id }
       });
+
+      const user_role = user_profile.role;
+      if (user_role === "user") {
+
+        const user_update_profile = await User.update({ firstName, lastName, phoneNumber, address, zipCode, city, state, country },
+          {
+            where: {
+              email
+            }
+          });
+
+        const get_user_dets = await User.findOne({
+          where: {
+            id: user_id
+          }
+        });
+
+        return res.status(200).json({
+          message: `Profile updated SUCCESSFULLY`,
+          data: get_user_dets
+        });
+
+      } else {
+        return res.status(400).json({
+          message: `You are not an authorized user. Please insert token.`
+        });
+      }
     }
-    return res.status(401).json({
-      message: `Update operation failed`,
-    });
   } catch (error: any) {
     console.log(error.message);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// export const updateUserProfile = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const schema = userProfileUpdate;
+//     const { error, value } = schema.validate(req.body);
+//     if (error) {
+//       return res.status(400).json({ message: error.details[0].message });
+//     }
+//     let {
+//       firstName,
+//       lastName,
+//       email,
+//       phoneNumber,
+//       address,
+//       zipCode,
+//       city,
+//       state,
+//       country,
+//     } = req.body;
+
+//     // console.log("image live   ",firstName, lastName, email, phoneNumber, address, zipCode, city, state, country)
+
+//     const updatedUser = (await User.update({
+//       firstName,
+//       lastName,
+//       phoneNumber,
+//       address,
+//       zipCode,
+//       city,
+//       state,
+//       country
+//     }, {
+//       where: { email: email },
+//     })) as unknown as IUSER;
+
+//     const user = await User.findOne({where : {email:email}}) as unknown as IUSER
+//     console.log("updateUser", user)
+//     if (updatedUser) {
+//       return res.status(200).json({
+//         message: `Your profile has been updated successfully`,
+//         data: updatedUser,
+//       });
+//     }
+//     return res.status(401).json({
+//       message: `Update operation failed`,
+//     });
+//   } catch (error: any) {
+//     console.log(error.message);
+//     return res.status(500).json({ message: "Internal server error" });
+//   }
+// };
 
 export const createUserImage = async (req: JwtPayload, res: Response) => {
   try {
@@ -491,13 +545,13 @@ export const createUserImage = async (req: JwtPayload, res: Response) => {
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
-    const { id } = req.user 
+    const { id } = req.user;
 
     const user = (await User.findOne({
-      where: { id:id},
+      where: { id: id },
     })) as unknown as IUSER;
 
-    console.log('user')
+    console.log('user');
 
     const updateField: Partial<IUSER> = {};
 
