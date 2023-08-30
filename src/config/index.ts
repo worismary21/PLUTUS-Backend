@@ -12,7 +12,7 @@ export const db = new Sequelize(
 
   {
     host: DB_HOST,
-    port: 5432,
+    port: 5500,
     dialect: "postgres",
     logging: false,
     dialectOptions: {
@@ -22,5 +22,6 @@ export const db = new Sequelize(
       // },
     },
   },
+
 
 );

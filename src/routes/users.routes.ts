@@ -16,6 +16,8 @@ import { getUsersBalance, getUsersInfo } from "../controllers/client/clientQuery
 import { upload } from '../middleware/uploadImage';
 import { forgotPassword, verifyUser } from '../controllers/client/clientMutationController';
 
+import { getUserNotifications } from "../controllers/client/clientQueryController"
+
 const router = Router();
 
 router.post('/signup', userSignup);
@@ -30,7 +32,7 @@ router.put('/change-password-email', verifyChangePasswordEmail);
 router.put('/change-password-otp/:id', verifyChangePasswordOTP);
 
 router.put('/change-password/:id', verifyChangePassword);
-router.put('/updateaccount', updateUserProfile);
+router.patch('/updateaccount', updateUserProfile);
 
 router.put('/profileimage', auth, upload.single('image'), createUserImage);
 router.post("/company", isAdmin, createCompany);
@@ -43,6 +45,7 @@ router.delete("/deleteUser/:id", isAdmin, deleteUserByAdmin);
 router.get("/balance", auth, getUsersBalance);
 
 router.get("/info", auth, getUsersInfo);
+router.get("/notifications", auth, getUserNotifications)
 
 export default router;
 
