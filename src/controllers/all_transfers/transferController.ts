@@ -145,7 +145,7 @@ export const transferToBeneficiary = async (
                 const seconds = date.getSeconds().toString().padStart(2, "0")
 
                 let debit_transfer_alert = {
-                  Txn: "DEDIT",
+                  Txn: "DEBIT",
                   Ac: `${sender_accountNumber[0]}XX..${sender_accountNumber[sender_accountNumber.length-3]}${sender_accountNumber[sender_accountNumber.length-2]}X`,
                   Amt: `$${amount}`,
                   Des: `${validated_Beneficiary.firstName} ${validated_Beneficiary.lastName}/Transfer P APP_`,
