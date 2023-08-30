@@ -1,11 +1,12 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import User from "../../model/user";
-import Transfers from "../../model/transfer";
-import Beneficiary from "../../model/beneficiary";
-import Investor from "../../model/investor";
-import Company from "../../model/company";
+import {Request, Response, NextFunction } from 'express'
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
+import User from '../../model/user'
+import Transfers from '../../model/transfer'
+import Beneficiary from '../../model/beneficiary'
+import Investor from '../../model/investor';
+import Company from '../../model/company'
+
 
 dotenv.config();
 
