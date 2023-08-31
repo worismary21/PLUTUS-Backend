@@ -19,6 +19,7 @@ export const transferToBeneficiary = async (
   res: Response,
   NextFunction: NextFunction
 ) => {
+  
   try {
     const schema = transfer_Beneficiary;
     const { error, value } = schema.validate(req.body);
@@ -287,8 +288,44 @@ export const transferToSavingsWallet = async (
         );
 
         if (current_savings_balance && updating_user_balance) {
+
+          let sender_accNumber = user_info.accountNumber
+          let sender_notification:any = user_info.notification
+          let sender_firstName = user_info.firstName
+          let sender_lastName = user_info.lastName
+
+          const timestamp = new Date().getTime()
+          const date = new Date(timestamp)
+          const year = date.getFullYear()
+          const month = date.getMonth()+1
+          const transfer_date = date.getDate()
+
+          const hours = date.getHours().toString().padStart(2, "0")
+          const minutes = date.getMinutes().toString().padStart(2, "0")
+          const seconds = date.getSeconds().toString().padStart(2, "0")
+
+
+          let debit_transfer_alert = {
+            Txn: "DEBIT",
+            Ac: `${sender_accNumber[0]}XX..${sender_accNumber[sender_accNumber.length-3]}${sender_accNumber[sender_accNumber.length-2]}X`,
+            Amt: `NGN${amount}`,
+            Des: `${sender_firstName} ${sender_lastName}/SAVINGS WALLET P_`,
+            Date: `${year}-${month}-${transfer_date} ${hours}:${minutes}:${seconds}`,
+            Bal: `NGN${user_new_balance}`
+          }
+          sender_notification.push(debit_transfer_alert)
+
+          const sender_Transaction_Status = await User.update(
+            { notification: sender_notification },
+            {
+              where: {
+                accountNumber: sender_accNumber,
+              },
+            }
+          );
+
           return res.status(200).json({
-            message: "Amount Transferred to Savings Wallet"
+            message: `NGN${amount} Transferred to Savings Wallet`
           });
         } else {
           return res.status(400).json({
@@ -449,7 +486,6 @@ export const transferToInvestmentCompany = async (
               }else if(investment_duration.split(" ")[1] === "year" || investment_duration.split(" ")[1] === "years"){
                 actual_investment_duration += (+investment_duration.split("")[0] * 12)
               }
-              console.log(actual_investment_duration)
               
               const company_roi = company_dets.roi
               const expected_return_amount:any = (amount * company_roi).toFixed(2)
@@ -476,6 +512,39 @@ export const transferToInvestmentCompany = async (
                   {
                     where: {
                       accountNumber: company_account_number,
+                    },
+                  }
+                );
+
+                let sender_notification:any = user_details.notification
+
+                const timestamp = new Date().getTime()
+                const date = new Date(timestamp)
+                const year = date.getFullYear()
+                const month = date.getMonth()+1
+                const transfer_date = date.getDate()
+
+                const hours = date.getHours().toString().padStart(2, "0")
+                const minutes = date.getMinutes().toString().padStart(2, "0")
+                const seconds = date.getSeconds().toString().padStart(2, "0")
+
+                const company_Name = company_details.companyName
+
+                let debit_transfer_alert = {
+                  Txn: "DEBIT",
+                  Ac: `${user_account_number[0]}XX..${user_account_number[user_account_number.length-3]}${user_account_number[user_account_number.length-2]}X`,
+                  Amt: `NGN${amount}`,
+                  Des: `${company_Name}/Transfer P APP_`,
+                  Date: `${year}-${month}-${transfer_date} ${hours}:${minutes}:${seconds}`,
+                  Bal: `NGN${user_new_balance}`
+                }
+                sender_notification.push(debit_transfer_alert)
+
+                const sender_Transaction_Status = await User.update(
+                  { notification: sender_notification },
+                  {
+                    where: {
+                      accountNumber: user_account_number,
                     },
                   }
                 );

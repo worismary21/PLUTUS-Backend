@@ -475,7 +475,6 @@ export const createUserImage = async (req: Request, res: Response) => {
      try {
           
           const {email} = req.body
-          console.log(email)
       const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
       const updateField: Partial<IUSER> = {}
       const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
