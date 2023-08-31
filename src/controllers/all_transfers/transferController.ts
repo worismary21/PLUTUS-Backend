@@ -147,10 +147,10 @@ export const transferToBeneficiary = async (
                 let debit_transfer_alert = {
                   Txn: "DEBIT",
                   Ac: `${sender_accountNumber[0]}XX..${sender_accountNumber[sender_accountNumber.length-3]}${sender_accountNumber[sender_accountNumber.length-2]}X`,
-                  Amt: `$${amount}`,
+                  Amt: `NGN${amount}`,
                   Des: `${validated_Beneficiary.firstName} ${validated_Beneficiary.lastName}/Transfer P APP_`,
                   Date: `${year}-${month}-${transfer_date} ${hours}:${minutes}:${seconds}`,
-                  Bal: `$${sender_new_Account_Balance}`
+                  Bal: `NGN${sender_new_Account_Balance}`
                 }
                 sender_notification.push(debit_transfer_alert)
 
@@ -166,10 +166,10 @@ export const transferToBeneficiary = async (
                 let credit_transfer_alert = {
                   Txn: "CREDIT",
                   Ac: `${beneficiary_AccountNumber[0]}XX..${beneficiary_AccountNumber[beneficiary_AccountNumber.length-3]}${beneficiary_AccountNumber[beneficiary_AccountNumber.length-2]}X`,
-                  Amt: `$${amount}`,
+                  Amt: `NGN${amount}`,
                   Des: `${sender_accountDetails.firstName} ${sender_accountDetails.lastName}/Transfer P APP_`,
                   Date: `${year}-${month}-${transfer_date} ${hours}:${minutes}:${seconds}`,
-                  Bal: `$${beneficiary_new_AccountBalance}`
+                  Bal: `NGN${beneficiary_new_AccountBalance}`
                 }
                 beneficiary_notifcation.push(credit_transfer_alert)
 
