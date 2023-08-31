@@ -19,6 +19,7 @@ export const transferToBeneficiary = async (
   res: Response,
   NextFunction: NextFunction
 ) => {
+  
   try {
     const schema = transfer_Beneficiary;
     const { error, value } = schema.validate(req.body);
