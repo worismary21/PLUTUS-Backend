@@ -11,4 +11,4 @@ router.delete('/delete', auth, deleteBeneficiary);
 
 
 
-export default router
+export default router;
