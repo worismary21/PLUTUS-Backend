@@ -44,7 +44,7 @@ investment_Records.init({
     tableName:"investment_Records"
 })
 
-export default investment_Records
+export default investment_Records;
 
 
 
