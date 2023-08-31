@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
 });
 
 
-db.sync({})
+db.sync()
   .then(() => {
     console.log("Database is connected");
   })

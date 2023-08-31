@@ -244,6 +244,7 @@ export const loginCompany = async (
         return res.status(200).json({
           message: `Login SUCCESSFUL`,
           token,
+          company_details
         });
       } else {
         return res.status(400).json({

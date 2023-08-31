@@ -80,6 +80,8 @@ export const userSignup = async ( req: Request, res: Response, next: NextFunctio
         message: `Account is created successfully`,
         data: newUser,
         user_token: token,
+        
+
       });
     }
   } catch (error) {
@@ -178,6 +180,7 @@ export const loginUser = async (
             email: user.email,
             user_token: token,
             role: user.role,
+            companyName: user.companyName
           });
         } else {
           res.status(400).json({
@@ -211,7 +214,9 @@ export const loginUser = async (
             verify: user.verify,
             id: user.id,
             firstName: user.firstName,
-            lastName: user.lastName
+            lastName: user.lastName,
+            
+            
           });
         } else {
           res.status(400).json({
@@ -294,7 +299,13 @@ export const verifyChangePasswordEmail = async (
     // Generate token for the user (assuming generateToken is asynchronous)
     const otp = await generateOTP(); // Get plain object of the user from the query result
 
-    const token = tokenGenerator(user);
+    const token = jwt.sign(
+     { email: user.email, id: user.id },
+     process.env.APP_SECRET!,
+     {
+       expiresIn: "1d",
+     }
+   );
 
     // Compose mail
     const mailOptions = {
@@ -461,9 +472,9 @@ export const updateUserProfile = async (
 };
 
 export const createUserImage = async (req: Request, res: Response) => {
-  try {
-
-      const {email} = req.body
+     try {
+          
+          const {email} = req.body
       const user = await User.findOne({where: {email: email }} ) as unknown as IUSER
       const updateField: Partial<IUSER> = {}
       const updateUserImage = await User.update({ imageUrl : req.file?.path },  {where: { email : email}} ) as unknown as IUSER
