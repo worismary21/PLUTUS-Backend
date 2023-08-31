@@ -86,15 +86,15 @@ export const emailHtmlForCompany = (companyName:string, email:string, password:s
 export const emailHtmlForCompanyTransferToInvestor = (investor_name:string, expectedReturn:number, companyName:string, roi:number, amount:number, actual_duration:string, monthlyReturn:number, date:string)=>{
     const mail = `
                     <p>Dear <strong>${investor_name}</strong>,</p><br>
-                    <p>Your account has been credited with <span style = "color:green"><strong>$${expectedReturn}</strong></span> from <strong>${companyName}</strong> on <strong>${date}</strong>.</p>
+                    <p>Your account has been credited with <span style = "color:green"><strong>NGN${expectedReturn}</strong></span> from <strong>${companyName}</strong> on <strong>${date}</strong>.</p>
                     <p style = "color:red">Please see your investment details highlighted below:</p><br>
 
                     <p>Investment Company: <span><strong>${companyName}</strong></span></p>
                     <p>ROI: <span style = "color:green">${roi}</span></p>
-                    <p>Investment Capital: <span style = "color:green"> $${amount}</span></p>
+                    <p>Investment Capital: <span style = "color:green"> NGN${amount}</span></p>
                     <p>Duration: <span style = "color:green">${actual_duration} months</span></p>
-                    <p>Monthly Return: <span style = "color:green">$${monthlyReturn}</span></p>
-                    <p>Total Investment Return: <span style = "color:green"><strong>$${expectedReturn}</strong></span></p><br>
+                    <p>Monthly Return: <span style = "color:green">NGN${monthlyReturn}</span></p>
+                    <p>Total Investment Return: <span style = "color:green"><strong>NGN${expectedReturn}</strong></span></p><br>
 
                     <p>You can also check out other investment plans on the plutus app and inspect for other opportunities from <strong>${companyName}</strong>.</p><br>
 

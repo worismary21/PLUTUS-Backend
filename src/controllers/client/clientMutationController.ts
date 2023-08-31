@@ -180,6 +180,7 @@ export const loginUser = async (
             email: user.email,
             user_token: token,
             role: user.role,
+            companyName: user.companyName
           });
         } else {
           res.status(400).json({
@@ -213,7 +214,9 @@ export const loginUser = async (
             verify: user.verify,
             id: user.id,
             firstName: user.firstName,
-            lastName: user.lastName
+            lastName: user.lastName,
+            
+            
           });
         } else {
           res.status(400).json({
